@@ -14,6 +14,9 @@ web_front = [
         collapsable: false,
         children:[
             'js-core/js-core',
+            'js-core/this',
+            'js-core/closure',
+
         ]
     },
     {
