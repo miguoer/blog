@@ -16,6 +16,9 @@ web_front = [
             'js-core/js-core',
             'js-core/this',
             'js-core/closure',
+            'js-core/call&apply',
+            'js-core/prototype',
+            'js-core/reference',
 
         ]
     },

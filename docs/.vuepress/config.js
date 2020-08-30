@@ -16,5 +16,8 @@ module.exports = {
           "./nav.js",
           "./sidebar.js"
 
-      ]
+      ],
+      markdown: {
+        lineNumbers: true
+      }
   }
