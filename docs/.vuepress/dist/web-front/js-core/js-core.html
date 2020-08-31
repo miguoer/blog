@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>变量提升&amp;函数提升 | 工欲善其事 必先利其器</title>
+    <meta name="generator" content="VuePress 1.5.3">
+    
+    <meta name="description" content="Just playing around">
+    <link rel="preload" href="/blog/assets/css/0.styles.5dc057b1.css" as="style"><link rel="preload" href="/blog/assets/js/app.d6ea18bb.js" as="script"><link rel="preload" href="/blog/assets/js/2.05342cf1.js" as="script"><link rel="preload" href="/blog/assets/js/28.5e1c6355.js" as="script"><link rel="prefetch" href="/blog/assets/js/10.6bab9eb0.js"><link rel="prefetch" href="/blog/assets/js/11.d66f3db6.js"><link rel="prefetch" href="/blog/assets/js/12.cb9cbf5a.js"><link rel="prefetch" href="/blog/assets/js/13.5d0d5e6c.js"><link rel="prefetch" href="/blog/assets/js/14.197a8e27.js"><link rel="prefetch" href="/blog/assets/js/15.7f6c2eb6.js"><link rel="prefetch" href="/blog/assets/js/16.8066d892.js"><link rel="prefetch" href="/blog/assets/js/17.539b22db.js"><link rel="prefetch" href="/blog/assets/js/18.58f4ec11.js"><link rel="prefetch" href="/blog/assets/js/19.e6606579.js"><link rel="prefetch" href="/blog/assets/js/20.69ddce0f.js"><link rel="prefetch" href="/blog/assets/js/21.a19633c6.js"><link rel="prefetch" href="/blog/assets/js/22.31437ee7.js"><link rel="prefetch" href="/blog/assets/js/23.dcbdb0bf.js"><link rel="prefetch" href="/blog/assets/js/24.e2d0b395.js"><link rel="prefetch" href="/blog/assets/js/25.438b9b5b.js"><link rel="prefetch" href="/blog/assets/js/26.149a26a2.js"><link rel="prefetch" href="/blog/assets/js/27.d3bc7094.js"><link rel="prefetch" href="/blog/assets/js/29.f3128d0e.js"><link rel="prefetch" href="/blog/assets/js/3.4ad4875a.js"><link rel="prefetch" href="/blog/assets/js/30.9915e45e.js"><link rel="prefetch" href="/blog/assets/js/31.d633d186.js"><link rel="prefetch" href="/blog/assets/js/32.743a4fbb.js"><link rel="prefetch" href="/blog/assets/js/33.4564b43a.js"><link rel="prefetch" href="/blog/assets/js/34.3c0b711a.js"><link rel="prefetch" href="/blog/assets/js/4.0bb70dc7.js"><link rel="prefetch" href="/blog/assets/js/5.61bf7090.js"><link rel="prefetch" href="/blog/assets/js/6.f8507797.js"><link rel="prefetch" href="/blog/assets/js/7.89e9ae9d.js"><link rel="prefetch" href="/blog/assets/js/8.08a316a1.js"><link rel="prefetch" href="/blog/assets/js/9.4d8c60d2.js">
+    <link rel="stylesheet" href="/blog/assets/css/0.styles.5dc057b1.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/blog/" class="home-link router-link-active"><!----> <span class="site-name">工欲善其事 必先利其器</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/blog/web-front/" class="nav-link router-link-active">
+  前端
+</a></div><div class="nav-item"><a href="/blog/algorithm/" class="nav-link">
+  算法
+</a></div><div class="nav-item"><a href="/blog/design-pattern/" class="nav-link">
+  设计模式
+</a></div><div class="nav-item"><a href="/blog/android/" class="nav-link">
+  安卓
+</a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/blog/web-front/" class="nav-link router-link-active">
+  前端
+</a></div><div class="nav-item"><a href="/blog/algorithm/" class="nav-link">
+  算法
+</a></div><div class="nav-item"><a href="/blog/design-pattern/" class="nav-link">
+  设计模式
+</a></div><div class="nav-item"><a href="/blog/android/" class="nav-link">
+  安卓
+</a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading"><span>HTML核心知识</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/web-front/html-core/html-core.html" class="sidebar-link">LocalStorage扩容</a></li><li><a href="/blog/web-front/html-core/cross-origin.html" class="sidebar-link">跨域问题解决方案</a></li></ul></section></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>JavaScript核心知识</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/web-front/js-core/js-core.html" aria-current="page" class="active sidebar-link">变量提升&amp;函数提升</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/blog/web-front/js-core/js-core.html#暂时性死区-tdz" class="sidebar-link">暂时性死区(TDZ)</a></li><li class="sidebar-sub-header"><a href="/blog/web-front/js-core/js-core.html#函数名和变量名同名情况处理" class="sidebar-link">函数名和变量名同名情况处理</a></li><li class="sidebar-sub-header"><a href="/blog/web-front/js-core/js-core.html#函数提升" class="sidebar-link">函数提升</a></li></ul></li><li><a href="/blog/web-front/js-core/this.html" class="sidebar-link">this</a></li><li><a href="/blog/web-front/js-core/closure.html" class="sidebar-link">闭包</a></li><li><a href="/blog/web-front/js-core/call&amp;apply.html" class="sidebar-link">call &amp; apply</a></li><li><a href="/blog/web-front/js-core/prototype.html" class="sidebar-link">原型链</a></li><li><a href="/blog/web-front/js-core/reference.html" class="sidebar-link">易错点</a></li></ul></section></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading"><span>前端工程化</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/web-front/engineering/engineering.html" class="sidebar-link">工程化入门</a></li><li><a href="/blog/web-front/engineering/build-tools.html" class="sidebar-link">常见构建工具</a></li><li><a href="/blog/web-front/engineering/git.html" class="sidebar-link">Git版本控制</a></li><li><a href="/blog/web-front/engineering/ci-cd.html" class="sidebar-link">CI&amp;CD</a></li><li><a href="/blog/web-front/engineering/quality.html" class="sidebar-link">代码质量管理</a></li><li><a href="/blog/web-front/engineering/test.html" class="sidebar-link">自动化测试</a></li></ul></section></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading"><span>前端性能优化</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/web-front/performance/performance.html" class="sidebar-link">性能调试和性能指标分析</a></li><li><a href="/blog/web-front/performance/promote-deep.html" class="sidebar-link">优化原理</a></li><li><a href="/blog/web-front/performance/webpack-promote.html" class="sidebar-link">Webpack4优化</a></li></ul></section></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading"><span>框架源码理解</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/blog/web-front/framework/framework.html" class="sidebar-link">Vue2源码</a></li><li><a href="/blog/web-front/framework/framework-vue3.html" class="sidebar-link">Vue3源码</a></li><li><a href="/blog/web-front/framework/framework-react.html" class="sidebar-link">React源码</a></li><li><a href="/blog/web-front/framework/framework-redux.html" class="sidebar-link">Redux源码</a></li><li><a href="/blog/web-front/framework/framework-vuex.html" class="sidebar-link">Vuex源码</a></li><li><a href="/blog/web-front/framework/framework-webpack4.html" class="sidebar-link">Webpack4源码</a></li><li><a href="/blog/web-front/framework/framework-webpack5.html" class="sidebar-link">Webpack5源码</a></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="变量提升-函数提升"><a href="#变量提升-函数提升" class="header-anchor">#</a> 变量提升&amp;函数提升</h1> <p>JavaScript在预编译js文件时，会将函数声明和变量声明提升到当前函数的顶端，这就是函数提升和变量提升。在js里，都是函数级作用域，ES之后有了块级作用域，但是必须要和<code>const</code>或<code>let</code>一起使用才会生效。包裹在<script></script>标签下的代码，将会统一放到一个立即执行函数中。</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>    //例子1：变量提升&amp;函数提升，此时输出undefinedt
+    &lt;script&gt;
+        test();//函数提升
+        function test() {
+            console.log(a);
+            var a = 20; 
+        }
+        
+    &lt;/script&gt;
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br></div></div><div class="language- line-numbers-mode"><pre class="language-text"><code>    //例子2：变量提升只会提升到其所在函数作用域的顶端，此时输出 a is not defined
+    function test() {
+        var a = 20; 
+    }
+    console.log(a);
+
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br></div></div><h2 id="暂时性死区-tdz"><a href="#暂时性死区-tdz" class="header-anchor">#</a> 暂时性死区(TDZ)</h2> <p>块级作用域中使用let或const声明变量之前使用了该变量，就会报错，这在语法上叫暂时性死区。</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>{
+    temp = 124;//TDZ
+    let temp
+}
+//报错
+ VM166:2 Uncaught ReferenceError: Cannot access 'temp' before initialization
+    at &lt;anonymous&gt;:2:9 
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br></div></div><p>使用块级作用域的变量时还应注意一点，块级作用域的声明对函数名无效</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>{
+    function test() {
+        console.log(&quot;aaa&quot;)
+    }
+}
+test()
+//输出 aaa
+
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br></div></div><h2 id="函数名和变量名同名情况处理"><a href="#函数名和变量名同名情况处理" class="header-anchor">#</a> 函数名和变量名同名情况处理</h2> <p>当函数名和变量名同名时，要看是否给变量赋值了。如果赋值了（不管是赋值undefined还是啥），就会重写，否则该变量是函数的引用</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>    function test() {
+
+    }
+    var test = undefined;
+    console.log(test);//输出undefined， test被重写
+
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br></div></div><div class="language- line-numbers-mode"><pre class="language-text"><code>    function test() {
+
+    }
+    var test;
+    console.log(test);//输出 test(){} 函数
+
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br></div></div><h2 id="函数提升"><a href="#函数提升" class="header-anchor">#</a> 函数提升</h2> <p>函数提升需要特别注意的是，它提升的是函数名，并不是函数体。最新的浏览器是这样实现的，老版本的IE和firefox的实现可能会有不一样</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>  //例:
+  function test() {
+      console.log(&quot;1&quot;)
+  }
+   function init() {
+       //函数提升到这里 var test;
+        if(false) {
+            function test() {
+                console.log(&quot;2&quot;)
+            }
+        }
+
+        console.log(test);//输出 undefined
+   }
+  
+
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br><span class="line-number">16</span><br></div></div><p>函数提升如果同名覆盖的情况，以最后一个声明为准。</p> <div class="language- line-numbers-mode"><pre class="language-text"><code>    var x = 1, y = 0, z = 0;
+    function add(x) {
+        return x + 1;
+    }
+    y = add(x);
+    console.log(y)
+
+    function add(x){
+        return x + 2;
+    }
+
+    z = add(x);
+    console.log(z);
+    //结果是 3, 3
+
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br><span class="line-number">12</span><br><span class="line-number">13</span><br><span class="line-number">14</span><br><span class="line-number">15</span><br></div></div></div> <footer class="page-edit"><!----> <div class="last-updated"><span class="prefix">最后更新时间:</span> <span class="time">8/28/2020, 11:10:42 PM</span></div></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/blog/web-front/html-core/cross-origin.html" class="prev">
+        跨域问题解决方案
+      </a></span> <span class="next"><a href="/blog/web-front/js-core/this.html">
+        this
+      </a>
+      →
+    </span></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/blog/assets/js/app.d6ea18bb.js" defer></script><script src="/blog/assets/js/2.05342cf1.js" defer></script><script src="/blog/assets/js/28.5e1c6355.js" defer></script>
+  </body>
+</html>
