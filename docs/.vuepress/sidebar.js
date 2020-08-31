@@ -61,9 +61,15 @@ web_front = [
 
 ]
 
-const algorithm = {
-    title:"算法",
-} 
+const algorithm = [
+    {
+        title:"leetcode",
+        collapsable: false,
+        children:[
+            'leetcode/leetcode',
+        ]
+    },
+]
 
 const design_pattern = {
     title:"设计模式",
@@ -75,5 +81,6 @@ const android = {
 
 
 module.exports ={
-    "/web-front/":web_front
+    "/web-front/":web_front,
+    "/algorithm/":algorithm
 }
