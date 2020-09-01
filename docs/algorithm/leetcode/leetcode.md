@@ -1,4 +1,6 @@
-# 42. 接雨水
+# TOP100
+
+## 42. 接雨水
 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
 
 ![1. List item](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9hc3NldHMubGVldGNvZGUtY24uY29tL2FsaXl1bi1sYy11cGxvYWQvdXBsb2Fkcy8yMDE4LzEwLzIyL3JhaW53YXRlcnRyYXAucG5n?x-oss-process=image/format,png#pic_center)
@@ -10,7 +12,7 @@
 输入: [0,1,0,2,1,0,1,3,2,1,2,1]
 输出: 6
 
-## 解答
+### 解析
 ``` javascript
 
 /**
@@ -58,3 +60,61 @@ var trap = function(height) {
 
 ```
 本题解法时间复杂度O(N),空间复杂度O(1)
+
+
+## 72. 编辑距离
+给你两个单词 word1 和 word2，请你计算出将 word1 转换成 word2 所使用的最少操作数 。
+
+你可以对一个单词进行如下三种操作：
+
+插入一个字符
+删除一个字符
+替换一个字符
+
+
+### 解析
+```javascript
+/**
+ * @param {string} word1
+ * @param {string} word2
+ * @return {number}
+ */
+var minDistance = function(word1, word2) {
+    //动态规划，dp[i][j]表示word1的前i个单词转换成word2的前j个单词的编辑距离
+    //状态转移方程 如果word1[i] != word2[j]: dp[i][j] = Math.min(dp[i- 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1),
+    // 如果word1[i] == word2[j]: dp[i][j] = Math.min(dp[i- 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1]),
+    var m = word1.length;
+    var n = word2.length;
+    if(m*n === 0) {
+        return m + n;
+    }
+
+    var dp = [];
+    for(var i = 0; i < m + 1; i++) {
+        dp[i] =  new Array(n + 1).fill(0);
+    }
+    
+    //初始化边界
+    for(var i = 0; i < m+1; i++) {
+        dp[i][0] = i;
+    }
+
+    for(var j = 0; j < n + 1; j++) {
+        dp[0][j] = j;
+    }
+
+    for(var i = 1; i < m + 1; i++) {
+        for(var j = 1; j < n + 1; j++) {
+            var left = dp[i - 1][j] + 1;
+            var down = dp[i][j - 1] + 1;
+            var left_down = dp[i - 1][j - 1];
+            if(word1[i - 1] !== word2[j - 1]) {
+                left_down += 1;
+            }
+            dp[i][j] = Math.min(left, Math.min(down, left_down));
+        }
+    }
+    return dp[m][n];
+};
+
+```
