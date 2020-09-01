@@ -5,7 +5,7 @@ const sidebar = require('./sidebar');
  module.exports = {	
     title: '工欲善其事 必先利其器',	
     base:"/blog/",	
-
+    dest:"dist",
      description: 'Just playing around',	
     themeConfig: {	
         sidebarDepth:2,	
