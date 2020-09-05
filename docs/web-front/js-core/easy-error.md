@@ -45,4 +45,73 @@ regex.test('foo'); // false
 
 ```
 
+## 函数定义内不能改变函数
+
+```javascript
+// 'use strict' 加严格模式会报错， sell是常量，不能被修改
+var test = function sell() {
+    sell = 124;
+    console.log(typeof sell);//function
+}
+
+test();
+```
+```javascript
+{
+    test = 1;
+    function test(){
+
+    }
+    test = 2;
+    console.log("inner", test); 2
+}
+
+console.log(test);//1， 如果test = 1没有声明，则输出function
+
+```
+
+## window.length属性
+window的length取决于当前页面iframe的个数。
+
+```javascript
+function test() {
+    console.log(this.length);
+}
+test();
+//输出0
+```
+
+```javascript
+//body
+<iframe ></iframe>
+
+//script
+function test() {
+    console.log(this.length);
+}
+test();
+//输出1
+```
+
+## arguments
+
+```javascript
+var test = {
+    name:"11",
+    method: function(fn) {
+        fn();//0, window.length, iframe个数为0
+        arguments[0]();
+    }
+}
+
+function fn() {
+    console.log(this)//this指向arguments，this.length为实参的数量
+    console.log(this.length)//2
+}
+test.method(fn, 1);
+
+```
+
+
+
 

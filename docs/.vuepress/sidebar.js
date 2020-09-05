@@ -6,7 +6,6 @@
         children:[	
             'html-core/html-core',	
             'html-core/cross-origin'	
-
          ]	
     },	
     {	
@@ -17,12 +16,20 @@
             'js-core/this',	
             'js-core/closure',	
             'js-core/call&apply',	
-            'js-core/prototype',	
+            'js-core/prototype',
+            'js-core/high-function',		
+            'js-core/tail-recursion',	
             'js-core/es6-es10',	
-            'js-core/reference',	
-
+            'js-core/easy-error',
          ]	
     },	
+    {	
+        title:"手写系列",	
+        collapsable: false,	
+        children:[	
+            'hand-write/hand-write'
+         ]	
+    },
     {	
         title:"前端工程化",	
         collapsable: false,	
