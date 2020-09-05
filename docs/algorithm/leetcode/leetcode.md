@@ -118,3 +118,93 @@ var minDistance = function(word1, word2) {
 };
 
 ```
+
+
+
+
+
+## 84 柱状图中最大的矩形
+给定 n 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+
+求在该柱状图中，能够勾勒出来的矩形的最大面积。
+
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2018/10/12/histogram.png)
+
+### 解析
+```javascript
+/**
+ * @param {number[]} heights
+ * @return {number}
+ */
+var largestRectangleArea = function(heights) {
+    //解法一：暴力破解,超出时间限制
+    var maxSize = 0;
+    var m = heights.length;
+    
+    for(var i = 0; i < m; i++) {
+        for(var j = 0; j <= i; j++) {
+            maxSize = Math.max(maxSize, minOfArray(heights.slice(j,i+1))*(i - j + 1) );        
+        }
+    }
+
+    return maxSize;
+};
+
+var minOfArray = function(arr){
+    var min = Infinity;
+    var QUANTUM = 32768;
+
+    for(var i = 0, len = arr.length; i < len; i+=QUANTUM) {
+        var subMin = Math.min.apply(null, arr.slice(i, Math.min(i + QUANTUM, len)));
+        min = Math.min(subMin, min);
+    }
+    return min;
+}
+```
+
+```javascript
+/**
+ * @param {number[]} heights
+ * @return {number}
+ */
+var largestRectangleArea = function(heights) {
+    //解法二 单调栈
+    var n = heights.length;
+    var left = new Array(n).fill(0);
+    var right = new Array(n).fill(0);
+    var stack = [];
+
+    //第一步：求出每根柱子左边最近的小于它高度的柱子
+    for(var i = 0; i < n; i++) {
+        //将栈顶中高度大于height[i]的元素全部出栈
+        while(stack.length != 0 && heights[stack[stack.length - 1]] >= heights[i]) {
+            stack.pop();
+        }
+        //栈顶元素就是i左边最近的低于它高度的索引
+        left[i] = stack.length === 0 ? -1: stack[stack.length - 1];
+        stack.push(i);
+    }
+
+    stack = [];
+    //第二步：求出每根柱子右边最近的小于它高度的柱子
+    for(var i = n - 1; i >=0 ; i--) {
+        //将栈顶中高度大于height[i]的元素全部出栈
+        while(stack.length != 0 && heights[stack[stack.length - 1]] >= heights[i]) {
+            stack.pop();
+        }
+        //栈顶元素就是i左边最近的低于它高度的索引
+        right[i] = stack.length === 0 ? n : stack[stack.length - 1];
+        stack.push(i);
+    }
+
+    //第三步：计算结果
+    var ans = 0;
+    for(var i = 0; i < n; i++) {
+        ans = Math.max(ans, (right[i] - left[i] - 1) * heights[i]);
+    }
+    return ans;
+
+
+};
+
+```

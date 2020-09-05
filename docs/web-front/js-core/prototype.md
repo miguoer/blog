@@ -1,5 +1,6 @@
-# 原型
-
+# 原型（prototype）
+js语言中为什么会出现`prototype`？这是因为最开始的js用构造函数创建实例对象时无法共享公共的属性和方法，会造成极大的资源浪费，考虑到这点，js的设计者决定为构造函数设置一个`prototype`属性。实例一旦创建，将自动引用`prototype`对象的属性和方法。所有实例对象共享同一个`prototype`对象，这也是js中的继承机制。
+只有函数式的`Object`才有protyotype属性
 `Object.prototype` 属性表示 `Object `的原型对象。JS中的对象继承了`Object.prototype`的属性和方法。并不是所有的对象都有原型，比如通过`Object.create(null)`创建的对象就没有原型对象，也可以通过`Object.setPrototypeOf`方法改变原型链（慎用）。
 
 ## 属性
@@ -53,7 +54,110 @@ console.log( "theTree.constructor is " + theTree.constructor );
 - `Object.prototype.__proto__`
 当对象实例化后，指向原型的对象
 
+```javascript
+    var arr = new Array();
+    console.log(arr.__proto__);//输出arr的原型对象，即Array的原型对象
+```
 
-## 用原型链实现ES5的面向对象
+:::warning
+    同一种类型的对象实例的原型对象是相等的，即所有的实例对象共享同一个prototype对象
+
+    ``` javascript
+        var a = new Array();
+        var b = new Array();
+        console.log(a.__proto__ === b.__proto__);//true
+    
+    ```
+
+:::
+
+
+## `prototype`和 `__proto__`
+这两个属性很容易混淆，他们本身也有着千丝万缕的联系。
+
+我们之前说过，`prototype`是函数才有的属性，而`__proto__`是每个对象都有属性。
+
+在大部分情况下，`__proto__`可以理解为"构造器的原型",即 `__proto__ === constructor.prototype`。但是通过 `Object.create()`创建的对象有可能不是，这是因为它使用传入参数的对象来提供新创建的对象的`__proto__`。
+
+## 使用`prototype`实现ES6中的继承
+
+首先来看下ES6的继承
+
+```javascript
+    class Car {
+        static color = "red";//静态属性可以继承
+        constructor(price) {
+            this.price = price;
+        }
+        test() {
+            console.log("价格是:",this.price);
+        }
+    }
+
+    class BWM extends Car {
+        constructor(price) {
+            super(price);
+        }
+    }
+    console.log(BWM.color);//red
+    const bmw = new BMW("30万");
+    bmw.test();
+
+```
+
+使用ES5语法时，应解决的问题：
+1. 静态属性不能继承
+2. 复制父类的原型给子类
+3. 子类的constructor指向不对，手动修正
+
+```javascript
+'use strict'
+function Car(brand, color, price) {
+    this.brand = brand;
+    this.color = color;
+    this.price = price
+}
+Car.type = "车"
+
+Car.prototype.sell = function() {
+    console.log("我是"+ this.color + "色的" + this.brand + ", 我的售价是" + this.price);
+}
+
+function BMW(brand, color, price) {
+    Car.call(this, brand, color, price);
+}
+
+//子类继承父类静态属性
+var staticKeys = Object.entries(Car);
+for(var i = 0; i < staticKeys.length; i++) {
+    var key = staticKeys[i][0];
+    var value = staticKeys[i][1];
+    BMW[key] = value;
+}
+console.log(BMW.type);//车
+
+// var __proto = Object.create(Car.prototype);
+// __proto.constructor = BMW;
+// BMW.prototype = __proto;
+BMW.prototype = Object.create(Car.prototype, {
+    constructor:{
+        value: BMW,
+        writable:false
+    }
+});
+// BMW.prototype = 123
+var bmw = new BMW("宝马", "红", "30万");
+bmw.sell();
+
+
+
+```
+
+
+
+
+
+
+
 
 
