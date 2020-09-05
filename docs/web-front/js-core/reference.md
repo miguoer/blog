@@ -27,4 +27,22 @@ append(s);
 
 ```
 
+## 连续正则匹配
+
+- 语法 `regexObj.test(str)`
+
+
+如果正则表达式设置了全局标志，test() 的执行会改变正则表达式   lastIndex属性。连续的执行test()方法，后续的执行将会从 lastIndex 处开始匹配字符串，(exec() 同样改变正则本身的 lastIndex属性值).
+
+```javascript
+var regex = /foo/g;
+
+// regex.lastIndex is at 0
+regex.test('foo'); // true
+
+// regex.lastIndex is now at 3
+regex.test('foo'); // false
+
+```
+
 

@@ -18,6 +18,7 @@
             'js-core/closure',	
             'js-core/call&apply',	
             'js-core/prototype',	
+            'js-core/es6-es10',	
             'js-core/reference',	
 
          ]	
