@@ -65,7 +65,14 @@
             'framework/framework-webpack5',	
 
          ]	
-    },	
+    },
+    {	
+        title:"微前端",	
+        collapsable: false,	
+        children:[	
+            'micro-frontend/micro-frontend',	
+         ]	
+    },
 
  ]	
 
