@@ -22,7 +22,14 @@
             'js-core/es6-es10',	
             'js-core/easy-error',
          ]	
-    },	
+    },
+    {	
+        title:"函数式编程",	
+        collapsable: false,	
+        children:[	
+            'function-program/function-program'
+         ]	
+    },
     {	
         title:"手写系列",	
         collapsable: false,	
