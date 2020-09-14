@@ -34,9 +34,60 @@
 
 
 ### 偏应用函数（partial application function）
-- 
+传递给函数一部分参数来调用它，让它返回一个函数去处理剩下的参数。偏应用函数之所以“偏”，在于其只能处理那些能与至少一个case语句匹配的输入，而不能处理所有可能的输入。
+
+`Function.prototype.bind()`就是一个典型的偏应用函数
+
+```javascript
+    const add3 = (a, b, c) => a + b + c;
+    const addMore = add3.bind(null, 2, 3);
+    console.log(addMore(1));//输出6
+
+```
 
 ### 柯里化
+柯里化通过偏应用函数实现，它是把一个多参函数转换成一个嵌套一元函数的过程。
+
+例：
+```javascript
+    var checkAge = min => (age => age > min);
+    var check18 = checkAge(18);
+    check18(20);
+```
+
+函数的柯里化
+```javascript
+const curry = (fn, arr = []) => (...args) =>
+(arg => (args.length === fn.length ? fn(...arg) :
+curry(fn, arg)))([ ...arr,
+...args ]);
+let curryTest = curry((a, b, c, d) => a + b + c + d);
+curryTest(1, 2, 3)(4); //10
+curryTest(1, 2)(4)(3); //10
+ 
+```
+
+#### 柯里化优点
+柯里化的目的是减少纯函数里参数的硬编码，好处是可以对函数进行预加载，是一种非常高效的吧编写函数的方法。
+
+#### 柯里化缺点
+- 内存泄露
+
+### 反柯里化
+函数柯里化是固定部分参数，返回一个接受剩余参数的函数，目的是为了缩小试用返回，创建一个针对性更强的函数。
+
+反柯里化的意义和用法和柯里化正好相反，是为了扩大适用范围，创建一个应用范围更广的函数。使本来只有特定对象才适用的方法，扩展到更多的对象。
+```javascript
+Function.prototype.unCurring = function() { var self = this;
+return function() {
+var obj = Array.prototype.shift.call(arguments);
+return self.apply(obj, arguments); };
+};
+var push = Array.prototype.push.unCurrying(),
+obj = {};
+push(obj, "first", "two"); console.log(obj);
+```
+
 
 ### 函数组合
 
