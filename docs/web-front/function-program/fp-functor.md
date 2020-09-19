@@ -33,6 +33,23 @@
 
 因此学习函数式编程就是学习函子的各种运算，运用不同的函子解决实际问题。
 
+```javascript
+class Functor {
+  constructor(val) { 
+    this.val = val; 
+  }
+
+  static of(x) {
+      return new Functor(x);
+  }
+
+  map(f) {
+    return new Functor(f(this.val));
+  }
+}
+
+```
+
 ## 常见的函子
 
 ### Pointed函子 
@@ -94,6 +111,8 @@ Either函子有两个作用用，一个是实现try/catch/throw， 主要用来�
 
 Either函子还表示两者中的任意一个，类似if...else处理。
 
+Either函子内部有两个值：左值和右值。右值是正常情况下使用的值，
+
 #### 错误处理
 
 ```javascript
@@ -122,7 +141,33 @@ Either函子还表示两者中的任意一个，类似if...else处理。
     Right.prototype.map = function(f) {
         return Right.of(f(this._value));
     }
- 
+```
+
+ES6写法：
+```javascript
+    class Left {
+        static of(x) {
+            return new Left(x);
+        }
+        constructor(x) {
+            this._value = x;
+        }
+        map(fn) {
+            return this;
+        }
+    }
+
+    class Right {
+        static of(x) {
+            return new Right(x);
+        }
+        constructor(x) {
+            this._value = x;
+        }
+        map(fn) {
+            return Right.of(fn(this._value));
+        }
+    }
 
 ```
 
@@ -130,9 +175,261 @@ Left和Right的唯一区别就在与map方法的实现。Left.map方法不会对
 
 例子：
 ```javascript
+var getAge = user => user.age ? Right.of(user.age): Left.of("error");
 
+getAge({name:"xiaohong", age:"21"}).map((age) => "Age is " + age);//Right("Age is 21");
 
 ```
+
+#### 条件运算
+
+```javascript
+class Either extends Functor {
+  constructor(left, right) {
+    this.left = left;
+    this.right = right;
+  }
+
+  map(f) {
+    return this.right ? 
+      Either.of(this.left, f(this.right)) :
+      Either.of(f(this.left), this.right);
+  }
+}
+
+Either.of = function (left, right) {
+  return new Either(left, right);
+};
+
+var addOne = function (x) {
+  return x + 1;
+};
+
+Either.of(5, 6).map(addOne);
+// Either(5, 7);
+
+Either.of(1, null).map(addOne);
+// Either(2, null);
+
+function parseJSON(json) {
+  try {
+    return Either.of(null, JSON.parse(json));
+  } catch (e: Error) {
+    return Either.of(e, null);
+  }
+}
+
+```
+
+### AP函子
+函子里面包含的值，可能是函数。AP函子解决的就是函子里的value是函数的情况。
+ap 是 applicative（应用）的缩写。凡是部署了ap方法的函子，就是 ap 函子
+
+```javascript
+ class Ap extends Functor {
+    //  static of(x) {//ES6可以继承
+    //      return new Ap(x);
+    //  }
+    //  constructor(x) {
+    //      this._value = x;
+    //  }
+    ap(F) {
+        return Ap.of(this.val(F.val));
+    }
+ }
+
+ function addTwo(x) {
+  return x + 2;
+}
+
+const A = Functor.of(2);
+const B = Functor.of(addTwo)
+
+ Ap.of(addTwo).ap(Functor.of(2));
+
+```
+
+ap函子的意义在于，对于那些多参数的函数，就可以从多个容器之中取值，实现函子的链式操作
+
+```javascript
+function add(x) {
+  return function (y) {
+    return x + y;
+  };
+}
+Ap.of(add).ap(Maybe.of(2)).ap(Maybe.of(3));
+// Ap(5)
+```
+
+### Monad函子
+函子是一个容器，可以包含任何值。函子之中再包含一个函子，也是合法的，但这样会出现多层嵌套的函子。
+
+```javascript
+Maybe.of(
+  Maybe.of(
+    Maybe.of({name: 'Mulburry', number: 8402})
+  )
+)
+
+```
+上面这个函子，一共有三个Maybe嵌套。如果要取出内部的值，就要连续三次调用this.val。这很不方便，于是出现了Monad函子。
+
+Monad函子的作用是，总是返回一个单层的函子。它有一个flatMap方法，与map方法的作用相同。唯一的区别就是如果生成了嵌套函子，它会取出后者内部的值，保证返回的永远是一个单层的容器，不会出现嵌套的情况。
+
+```javascript
+class Monad extends Functor {
+  join() {
+    return this.val;
+  }
+  flatMap(f) {
+    return this.map(f).join();
+  }
+}
+```
+上面代码中，如果函数f返回的是一个函子，那么this.map(f)就会生成一个嵌套的函子。所以，join方法保证了flatMap方法总是返回一个单层的函子。这意味着嵌套的函子会被铺平（flatten）。
+
+Monad是一种设计模式，表示将一个运算过程，通过函数拆解成互相连接的多个步骤。只需要提供下一步运算所需的函数，整个运算就会自动执行下去。js中的Promise就是一种Monad。Monad可以让我们避免了嵌套地狱，可以轻松处理深度嵌套的函数式编程，比如IO和其它异步任务。
+
+Monad函子的重要应用，就是实现I/O操作。
+
+### IO
+I/O是不纯的操作，普通的函数式编程没法做。这时就需要把 IO 操作写成Monad函子，通过它来完成。
+
+```javascript
+import _ from 'lodash';
+var compose = _.flowRight;
+
+var IO = function(f) {
+    this._value = f;
+}
+
+IO.of = x => new IO(_ => x);
+
+IO.prototype.map = function(f) {
+    //把f组合之后，return 出去，让外部去执行，将不纯的函数变为纯的
+    return new IO(compose(f, this._value));
+}
+
+//ES6 写法
+
+class IO extends Monad{
+    map(f){
+        return IO.of(compose(f, this._value));
+    }
+}
+
+```
+
+举个例子：
+
+```javascript
+var fs = require('fs');
+
+var readFile = function(filename) {
+  return new IO(function() {
+    return fs.readFileSync(filename, 'utf-8');
+  });
+};
+
+var print = function(x) {
+  return new IO(function() {
+    console.log(x);
+    return x;
+  });
+}
+
+readFile("./user.txt")
+    .flatMap(tail)
+    .flatMap(print);
+
+//最后在Monad函子中执行    
+
+```
+
+完整代码：
+```javascript
+var fs = require('fs');
+var _ = require('lodash');
+//基础函子
+class Functor {
+  constructor(val) {
+    this.val = val;
+  }
+  map(f) {
+    return new Functor(f(this.val));
+  }
+}
+//Monad 函子
+class Monad extends Functor {
+  join() {
+    return this.val;
+  }
+  flatMap(f) {
+    //1.f == 接受一个函数返回的是IO函子
+    //2.this.val 等于上一步的脏操作
+    //3.this.map(f) compose(f, this.val) 函数组合 需要手动执行
+    //4.返回这个组合函数并执行 注意先后的顺序
+    return this.map(f).join();
+  }
+}
+var compose = _.flowRight;
+//IO函子用来包裹📦脏操作
+class IO extends Monad {
+  //val是最初的脏操作
+  static of(val) {
+    return new IO(val);
+  }
+  map(f) {
+    return IO.of(compose(f, this.val));
+  }
+}
+var readFile = function (filename) {
+  return IO.of(function () {
+    return fs.readFileSync(filename, 'utf-8');
+  });
+};
+var print = function (x) {
+  console.log('🍊');
+  return IO.of(function () {
+    console.log('🍎');
+    return x + '函数式';
+  });
+};
+var tail = function (x) {
+  console.log(x);
+  return IO.of(function () {
+    return x + '【京程一灯】';
+  });
+};
+const result = readFile('./user.txt')
+  //flatMap 继续脏操作的链式调用
+  // .flatMap(print);
+  .flatMap(print)()
+  .flatMap(tail)();
+console.log(result.val());
+// console.log(result().val());
+
+```
+
+## 当下流行的函数式编程库
+
+- Rxjs 原理必会
+
+- lodash 原理必会
+
+- Underscore
+
+- Ramdajs
+
+
+## 总结
+
+
+- 并发编程。函数式编程不用考虑死锁，因为它不修改变量。可以将工作分摊到多个线程，部署并发编程。
+
+- 单元测试。函数式编程可以方便单元测试。因为我们只需考虑参数，不用考虑函数的调用顺序。
+
+函数式编程带来了更高的可组合型，灵活性以及容错性。现代JS库入redux，都已经开始使用函数式编程。redux的核心理念就是状态机和函数式编程。
 
 
 
