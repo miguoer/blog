@@ -174,6 +174,86 @@ f("abc efg");
 
 
 ### 高阶函数
+高阶函数就是把函数当参数，把传入的函数做一个封装，返回这个封装的函数，达到更高程度的抽象。（传入一个函数，返回一个函数，里面执行这个函数）
+
+```javascript
+  var add = function(a, b) {
+    return a + b;
+  }
+  function math(func, array) {
+    return func(array[0], array[1]);
+  }
+
+  math(add,[1, 2]);//3
+
+```
+
+react中的高阶组件就是一种高阶函数。
+
+
+### 尾递归优化
+
+尾递归的判断标准是函数运行的最后一步是否调用自身，而不是函数的最后一行调用自身(递归)。最后一行调用其它函数叫尾调用。
+
+```javascript
+  //递归
+  function factorial(n) {
+    if(n === 1) return 1;
+    return n * factorial(n - 1);
+  }
+
+  //尾递归
+
+  function factorial(n, total) {
+    if(n === 1) return 1;
+    return factorial(n - 1, n * total);
+  }//ES6中强制使用尾递归
+
+```
+:::warning 注意
+尾递归是我们自己实现的，并不是浏览器所做的优化。尾递归不容易爆栈，不一定不会爆栈。如果浏览器做了优化，即factorial函数只创建一次，就不会爆栈。
+:::
+
+
+#### 尾递归存在的问题
+理论上尾递归调用栈永远都是更新当前的栈帧，这样就完全避免了爆栈的危险。但是当前浏览器并未完全支持，原因是：
+1. 在引擎层面消除递归是一个隐式的行为，程序员意识不到。
+2. 堆栈信息丢失了，开发者难调试。浏览器只会留最后一个调用帧。
+
+
+
+#### 如何解决尾递归问题
+- 如果浏览器不支持，把递归改成while就行
+
+- 蹦床函数
+蹦床函数+偏应用函数，将递归执行的过程暴露出来。手动让用户循环执行。
+
+
+```javascript
+  //1. 转成偏函数
+  function runStack(n) {
+    if(n === 0) {
+      return 100;
+    }
+    reutrn runStack.bind(null, n - 2);
+  }
+  //2. 蹦床函数，避免递归
+
+  function trampoline(f) {
+    var result = f.apply(fun, _.rest(arguments));
+    while(_.isFunction(result)) {
+      result = result();
+    }
+    return result;
+  }
+
+  //3. 蹦床函数包裹偏函数
+  trampoline(runStack(100000000));
+
+```
+
+
+
 
 
 

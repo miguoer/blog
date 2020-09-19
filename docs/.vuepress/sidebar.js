@@ -17,8 +17,6 @@
             'js-core/closure',	
             'js-core/call&apply',	
             'js-core/prototype',
-            'js-core/high-function',		
-            'js-core/tail-recursion',	
             'js-core/es6-es10',	
             'js-core/easy-error',
          ]	
@@ -27,8 +25,10 @@
         title:"函数式编程",	
         collapsable: false,	
         children:[	
-            'function-program/function-program'
-         ]	
+            'function-program/function-program',
+            'function-program/fp-functor'
+
+        ]	
     },
     {	
         title:"手写系列",	
