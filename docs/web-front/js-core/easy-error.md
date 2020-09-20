@@ -112,6 +112,128 @@ test.method(fn, 1);
 
 ```
 
+## 对象相加
+
+js中在执行对象相加操作时，是对原始值的相加。通过object.valueOf()可以取到对象的原始值。Date对象相加时是先走toString()，再走valueOf()。
+```javascript
+console.log({} + []);//[object Object]
+//object表示的是对象类型 ，如果放在()里的，相加会取原始值，把原始值相加。
+console.log({} + "");//[object Object]
+
+console.log({} + {});//[object Object][object Object] 
+
+console.log([] + {});//[object Object]
+//[]不是代码块，因此转换为原始值，[]的原始值是[]，toString就是空[].valueOf().toString() == ""
+
+
+{} + [];
+//0，{}被当做代码块先执行，+[]会将[]转Number，为0 ,所以值为0
+
+
+```
+
+## 隐式转换比较 (==比较)
+==比较时，如果两边类型不一致(toPrimitive),会先取valueOf，再toString。
+
+1. 简单值  直接拿值比
+2. 对象和对象， 拿地址比
+3. 对象和简单值，只有[]有意义。
+```javascript
+    [] == 0;//true
+    [] == false;//true
+    [] == ![]//!的优先级更高，先转换类型为false
+    NaN == 0 //typeof NaN 是number
+
+    null == 0//false
+    null <= 0//true小于等于会转Number，==不转
+    null == null/undefined//其它都不等
+```
+
+## 作用域
+作用域链在定义的时候确定的，而不是执行的时候。JS是词法作用域，不是动态作用域。
+
+```javascript
+    function bar() {
+        console.log(myName);
+    }
+
+    function foo() {
+        var myName = "foo"
+        bar();
+    }
+
+    var myName = "out";
+    foo();//out
+
+
+```
+
+## eval
+eval会把当前的环境，全部塞到全局词法作用域中。
+
+```javascript
+    function test(){
+        var apple = "apple111";
+        return function() {
+            eval("");//产生了闭包
+
+            //解决办法: window.eval("");
+        }
+    }
+
+    test()();//apple会被塞到全局作用域
+
+```
+
+webpack中生成的代码，全部都包裹在eval里。
+
+js中with和trycatch都可以延长作用域链。
+
+```javascript
+    var obj = {a:30};
+    with(obj) {
+        b = 30;
+    }
+    console.log(b);//30
+    //b会挂载到全局
+
+```
+
+vue中使用了with，为了省事。
+
+try/catch会延长词法 作用域链
+
+```javascript
+    try {
+
+    } catch(e) {
+        //catch(e){}中的对象组成了一个新的变量，添加到了作用域的顶端。e这个对象会被推入一个可变对象并置于作用域的顶端。
+    }
+```
+
+## ..
+```javascript
+    console.log(1..a)//undefined, js中会把1..处理成(1.).a。
+    console.log(1.a)//报错
+
+```
+
+## 函数的name不能修改
+
+```javascript
+    Object.prototype.name = "ddd";
+    function test() {};
+    test.name;//test
+    1..a//ddd
+
+```
+
+
+
+
+
+
+
 
 
 
