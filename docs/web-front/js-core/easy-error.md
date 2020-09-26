@@ -228,6 +228,42 @@ try/catch会延长词法 作用域链
 
 ```
 
+## 死循环和爆栈
+主线程死循环会让主线程的其它任务得不到执行，导致卡死，可以把循环放到WebWorker中。爆栈是程序执行堆栈超过了JS所能承受的最大的栈，导致报错。
+
+
+```javascript
+//html
+<body>
+    <input type="text" value="" />
+    <script src="./demo8.js"></script>//demo里有死循环
+    <script>
+        const worker = new Worker("demo8.js");
+        worker.onmessage = function (event) {
+            console.log(event.data);
+        }
+    </script>
+    <!-- concurrent.thread.js -->
+    <!-- <script type="text/x-script.multithreaded-js"></script>
+    <script>
+        Concurrent.Thread.create(function () {
+            $('#test').click(function () {
+                alert(1);
+
+            });
+            /*下面有一段特别复杂的函数*/
+            for (var i = 0; i < 10000; i++) {
+                console.log(i);
+
+            }
+        });
+    </script> -->
+</body>
+
+```
+
+
+
 
 
 

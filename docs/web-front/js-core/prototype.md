@@ -1,7 +1,9 @@
 # 原型（prototype）
 js语言中为什么会出现`prototype`？这是因为最开始的js用构造函数创建实例对象时无法共享公共的属性和方法，会造成极大的资源浪费，考虑到这点，js的设计者决定为构造函数设置一个`prototype`属性。实例一旦创建，将自动引用`prototype`对象的属性和方法。所有实例对象共享同一个`prototype`对象，这也是js中的继承机制。
 只有函数式的`Object`才有protyotype属性
-`Object.prototype` 属性表示 `Object `的原型对象。JS中的对象继承了`Object.prototype`的属性和方法。并不是所有的对象都有原型，比如通过`Object.create(null)`创建的对象就没有原型对象，也可以通过`Object.setPrototypeOf`方法改变原型链（慎用）。
+`Object.prototype` 属性存储了 `Object `的原型对象。JS中的对象继承了`Object.prototype`的属性和方法。并不是所有的对象都有原型，比如通过`Object.create(null)`创建的对象就没有原型对象，也可以通过`Object.setPrototypeOf`方法改变原型链（慎用）。
+
+`Function.prototype`属性存储了 `Function` 的原型对象
 
 ## 属性
 
@@ -151,7 +153,23 @@ bmw.sell();
 
 ```
 
-## 
+## 关于 __proto__ & constructor & prototype
+
+prototype是函数才具有的属性，__proto__和constructor是每个对象都具有的属性。他们之间的关系可以参考下面这张图。
+
+![](./proto.jpeg)
+
+来梳理一下。
+
+通过 var f1 = new Foo()之后， f1其实是一个函数对象。它的__proto__是Foo的prototype。Foo.prototype的constructor是function Foo()，而function Foo()的prototype就是Foo.prototype。
+
+那Foo.prototype是哪里来的？ 他继承自Object.prototype。所以Foo.prototype的原型对象__proto__就是Object.prototype。 Object.prototype的constructor就是函数function Object()。
+
+那Object.prototype的原型是啥？已经到顶了，所以是null。Object.prototype的constructor呢？就是function Object()。
+
+那function Object()的__proto__呢？它是大Function.prototype。所以大Function是所有对象的根。
+
+Function.prototype.constructor等于自身 function Function(){}。Function的__proto__等于Function.prototype。
 
 
 

@@ -34,7 +34,24 @@
         title:"手写系列",	
         collapsable: false,	
         children:[	
-            'hand-write/hand-write'
+            'hand-write/hand-write',
+            'hand-write/json',
+            'hand-write/call',
+            'hand-write/bind',
+            'hand-write/extend',
+            'hand-write/curry',
+            'hand-write/promise',
+            'hand-write/throttle',
+            'hand-write/clone',
+            'hand-write/instanceof',
+            'hand-write/drag',
+            'hand-write/settimeout',
+            'hand-write/object',
+            'hand-write/event',
+            'hand-write/redux',
+            'hand-write/koa',
+
+
          ]	
     },
     {	
