@@ -127,6 +127,43 @@ TCP的断开需要发送四个包，称为四次挥手。
 - 4xx：客户端错误--请求有语法错误或请求无法实现
 - 5xx：服务器端错误--服务器未能实现合法的请求
 
+## cookie和session
+### 定义及工作原理
+
+- **cookie**
+Cookies是保存在客户端的小段文本，随客户端点每一个请求发送该url
+下的所有cookies到服务器端。
+
+- **session**
+Session则保存在服务器端，通过唯一的值sessionID来区别每一个用
+户。SessionID随每个连接请求发送到服务器，服务器根据sessionID来识
+别客户端，再通过session 的key获取session值。
+
+#### cookie工作过程
+1. 浏览器端第一次发送请求到服务器端
+2. 服务器端创建Cookie，该Cookie中包含用户的信息，然后将该Cookie发送到浏览器端
+3. 浏览器端再次访问服务器端时会携带服务器端创建的Cookie
+4. 服务器端通过Cookie中携带的数据区分不同的用户
+
+!()[./cookie.png]
+
+#### session工作过程
+1. 浏览器端第一次发送请求到服务器端，服务器端创建一个Session，同时会创建一个特殊的Cookie（name为JSESSIONID的固定值，value为session对象的ID），然后将该Cookie发送至浏览器端
+2. 浏览器端发送第N（N>1）次请求到服务器端,浏览器端访问服务器端时就会携带该name为JSESSIONID的Cookie对象
+3. 服务器端根据name为JSESSIONID的Cookie的value(sessionId),去查询Session对象，从而区分不同用户。
+name为JSESSIONID的Cookie不存在（关闭或更换浏览器），返回1中重新去创建Session与特殊的Cookie
+name为JSESSIONID的Cookie存在，根据value中的SessionId去寻找session对象
+value为SessionId不存在**（Session对象默认存活30分钟）**，返回1中重新去创建Session与特殊的Cookie
+value为SessionId存在，返回session对象
+
+!()[./session.png]
+
+
+### 区别
+- cookie数据保存在客户端，session数据保存在服务端。
+- session不能伪造，cookie容易伪造。
+- cookie大小受浏览器限制。一个站点在客户端存放的cookie不能超过4K。
+
 ## HTTP各版本分析
 
 ### HTTP/1.0

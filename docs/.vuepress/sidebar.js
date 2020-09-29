@@ -58,7 +58,9 @@
         title:"Nodejs",	
         collapsable: false,	
         children:[	
-            'nodejs/nodejs'
+            'nodejs/nodejs',
+            'nodejs/http-cache',
+            'nodejs/https'
          ]	
     },
 
