@@ -61,7 +61,8 @@
             'nodejs/nodejs',
             'nodejs/http-cache',
             'nodejs/https',
-            'nodejs/http-next'
+            'nodejs/http-next',
+            'nodejs/node-part-one'
          ]	
     },
 
