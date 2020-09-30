@@ -48,7 +48,9 @@ If-Modified-Since:再次请求服务器时，通过此字段通知服务器上�
 若资源的最后修改时间大于If-Modified-Since，说明资源又被改动过，则响应整片资源内容，返回状态码200；
 若资源的最后修改时间小于或等于If-Modified-Since，说明资源无新修改，则响应HTTP 304，告知浏览器继续使用所保存的cache。
 
-### Etag  /  If-None-Match（优先级高于Last-Modified  /  If-Modified-Since）
+### Etag  /  If-None-Match
+这对的优先级高于Last-Modified  /  If-Modified-Since
+
 Etag: 服务器响应请求时，告诉浏览器当前资源在服务器的唯一标识（生成规则由服务器决定）。
 If-None-Match：再次请求服务器时，通过此字段通知服务器客户段缓存数据的唯一标识。
 服务器收到请求后发现有头If-None-Match 则与被请求资源的唯一标识进行比对，
@@ -56,19 +58,19 @@ If-None-Match：再次请求服务器时，通过此字段通知服务器客户�
 相同，说明资源无新修改，则响应HTTP 304，告知浏览器继续使用所保存的cache。
 
 缓存示意图1：
-!()[./no_cache] !()[./has_cache]
+
+![](./images/no_cache.png)
+![](./images/has_cache.png)
 
 ## 如何配置
 
 后端一般都会用nginx做反向代理，缓存配置一般也在nginx中配置。
 - Cache-Control
-```javascript
-//例1：给js css设置cache-control
-
+```shell
+#例1：给js css设置cache-control
 location ~ .*\.(js|css)$ {
-expires 10d;
+    expires 10d;
 }
-
 ```
 
 - Last-Modified
@@ -76,4 +78,7 @@ Last-Modified默认也会带上，但是要配合Cache-Control使用
 
 - Etag
 nginx默认会开启etag。如果要关闭可以配置：
-``` etag off; ```
+
+```shell
+    etag off; 
+```

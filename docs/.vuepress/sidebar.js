@@ -60,7 +60,8 @@
         children:[	
             'nodejs/nodejs',
             'nodejs/http-cache',
-            'nodejs/https'
+            'nodejs/https',
+            'nodejs/http-next'
          ]	
     },
 
