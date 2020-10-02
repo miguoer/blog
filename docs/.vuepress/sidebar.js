@@ -49,9 +49,7 @@
             'hand-write/object',
             'hand-write/event',
             'hand-write/redux',
-            'hand-write/koa',
-
-
+            'hand-write/koa'
          ]	
     },
     {	
@@ -109,6 +107,14 @@
             'micro-frontend/micro-frontend',	
          ]	
     },
+    {	
+        title:"项目架子",	
+        collapsable: false,	
+        children:[	
+            'project-framework/project-framework'	
+         ]	
+    },
+    
 
  ]	
 
