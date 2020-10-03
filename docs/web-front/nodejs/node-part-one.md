@@ -158,3 +158,24 @@ V8提出了三色标记法。黑色、白色和灰色。黑色标色这个节点
 ### 服务器集群
 
 ![](./images/service_jq.jpg)
+
+
+## pm2拉起进程的原理
+nodejs擅长处理io密集型程序，用pm2的cluster模式启动程序时，会在每个CPU上fork一个子进程。主进程监控子进程的运行，如果子进程挂了会重新拉起。
+
+一个进程fork后，进程的代码、数据、文件、寄存器都会复制一遍，所以子进程也会执行下面的代码，子进程执行的时候就会启动应用服务。
+```javascript
+// master
+var cluster = require('cluster');//进程相关
+var numCPUs = require('os').cpus().length;//获取CPU数目，返回cpu核数
+ 
+if (cluster.isMaster) {//判断当前进程是不是主进程
+    console.log(numCPUs);
+    for (var i = 0; i < numCPUs; i++) {
+        var worker = cluster.fork();
+    }
+} else {
+    require("./app.js");//不是主进程，起服务
+}
+
+```
