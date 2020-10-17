@@ -82,7 +82,8 @@
         children:[	
             'performance/performance',	
             'performance/promote-deep',	
-            'performance/webpack-promote',	
+            'performance/webpack-promote',
+            'performance/react-ssr'	
 
          ]	
     },	
