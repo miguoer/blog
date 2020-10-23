@@ -80,7 +80,11 @@
         title:"前端性能优化",	
         collapsable: false,	
         children:[	
+            'performance/basic-server',
             'performance/performance',	
+            'performance/browser-render-process',
+            'performance/browser-render-param',
+            'performance/nodejs-promote',
             'performance/promote-deep',	
             'performance/webpack-promote',
             'performance/react-ssr'	
