@@ -81,6 +81,7 @@
         collapsable: false,	
         children:[	
             'performance/basic-server',
+            'performance/chrome-render-mechanic',
             'performance/performance',	
             'performance/browser-render-process',
             'performance/browser-render-param',
