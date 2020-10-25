@@ -112,7 +112,9 @@ server.listen(3002);
 ```javascript
 ./wrk -t12 -c400 -d 60s http://127.0.0.1:3002/buffer
 ```
-
+结果：
+![](./images/wrk_result_buffer.png)
+可以看到平均响应时间和QPS都得到很大的提升。
 
 
 

@@ -1,4 +1,4 @@
-# React Isomorphic
+# React 同构 (Isomorphic)
 
 所谓同构，就是一个 web 应用在浏览器端和 Node 端共用一套代码。同构直出可以加快首屏渲染速度，提供友好的 SEO。
 
