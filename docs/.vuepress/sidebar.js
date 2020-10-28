@@ -70,7 +70,7 @@
         children:[	
             'engineering/engineering',	
             'engineering/build-tools',	
-            'engineering/git',	
+            'engineering/node-di',	
             'engineering/ci-cd',	
             'engineering/quality',	
             'engineering/test',	
