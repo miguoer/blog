@@ -56,7 +56,8 @@ Req/Sec: 每个线程每秒钟完成的请求数
 - 各种报表数据图形展示
 
 #### 如何获取到程序运行内存？
-可以使用node自带的`process.memoryUsage`。它返回一个对象，包含了Node进程内存占用信息。该对象包含四个字段，单位是字节：
+可以使用node自带的`process.memoryUsage`。
+它返回一个对象，包含了Node进程内存占用信息。该对象包含四个字段，单位是字节：
 
 - rss(resident set size)：所有内存占用，包括指令区和堆栈
 - heapTotal: 堆占用的内存，包括用到的和没用到的。
@@ -424,7 +425,6 @@ Nodejs以8KB为界限来区分是小对象还是大对象。另外，在初始�
 
 ### 使用buffer
 
-
 ```javascript
 const http = require('http');
 
@@ -461,6 +461,26 @@ server.listen(3002);
 ![](./images/wrk_result_buffer.png)
 可以看到平均响应时间和QPS都得到很大的提升。
 
+**实际项目的使用**
+在Node端渲染出html后，用stream的Readable流式吐出：
 
+```javascript
+import {Readable} from 'stream';
+
+  function createSSRSreamPromise() {
+    //流式输出html 防止html过大影响渲染 造成白屏时间太长
+    return new Promise((resolve, reject) => {
+      const bufferStream = new Readable();
+      bufferStream.push(html);
+      bufferStream.push(null);
+      ctx.status = 200;
+      ctx.type = "html";
+      bufferStream.on("error", (err) => {
+        console.log();
+      }).pipe(ctx.res);
+    })
+  }
+  await createSSRSreamPromise();
+```
 
 

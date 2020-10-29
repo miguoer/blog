@@ -364,3 +364,183 @@ function Main() {
 ReactDOM.hydrate(<Main />, document.querySelector("#panda-app-root"));
 
 ```
+
+## MPA实现SPA效果的原理
+MPA切页时如果想要达到SPA的效果，需要解决几个问题：
+1. node端如何判断是切页还是刷页
+2. 切页如何回吐需要的那部分html
+3. 如何处理事件绑定
+
+### 如何判断切页还是刷页
+要达到这个目的MPA做页面跳转时只能使用a标签，同时配合 `pjax` 库。
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}{% endblock %}</title>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    {% include "../../components/banner/banner.html"%}
+    <div id="app">
+      {% block content %}{% endblock %}
+    </div>
+    <script src="https://cdn.staticfile.org/jquery/3.5.1/jquery.js"></script>
+    <script src="https://cdn.staticfile.org/jquery.pjax/2.0.1/jquery.pjax.min.js"></script>
+    <script>
+      $(document).pjax('a', '#app');
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
+```
+子组件：
+```javascript
+//html
+<div class="list pjaxcontent">
+  <h1>展示列表</h1>
+  <hr />
+  <h3 id="js-btn">[[data]]</h3>
+</div>
+
+//js
+const list = {
+  init() {
+    $(document).on('click', '#js-btn', function (event) {
+      // $('#js-btn').click(function () {
+      alert('数据加载成功');
+    });
+    console.log('list');
+  },
+};
+export default list;
+```
+
+node端判断请求头是否有x-pjax
+```javascript
+// import Book from '@models/Book';
+import { route, GET } from 'awilix-koa';
+import { Readable } from 'stream';
+import cheerio from 'cheerio';
+@route('/books')
+class BooksController {
+  constructor({ booksService }) {
+    this.booksService = booksService;
+  }
+  @route('/list')
+  @GET()
+  async actionIndex(ctx, next) {
+    const data = await this.booksService.getData();
+    const html = await ctx.render('books/pages/list', {
+      data,
+    });
+    if (ctx.request.header['x-pjax']) {
+      console.log('站内切');
+      
+    } else {
+      console.log('刷新');
+
+      // ctx.body = html;
+    }
+  }
+
+}
+export default BooksController;
+
+```
+
+### 切页如何回吐需要的那部分html
+使用到的库
+- cheerio
+
+node端代码:
+```javascript
+// import Book from '@models/Book';
+import { route, GET } from 'awilix-koa';
+import { Readable } from 'stream';
+import cheerio from 'cheerio';
+@route('/books')
+class BooksController {
+  constructor({ booksService }) {
+    this.booksService = booksService;
+  }
+  @route('/list')
+  @GET()
+  async actionIndex(ctx, next) {
+    const data = await this.booksService.getData();
+    const html = await ctx.render('books/pages/list', {
+      data,
+    });
+    if (ctx.request.header['x-pjax']) {//区分是否
+      console.log('站内切');
+      const $ = cheerio.load(html);
+      ctx.status = 200;
+      ctx.type = 'html';
+      $('.pjaxcontent').each(function () {
+        ctx.res.write($(this).html());//吐需要的html组件
+      });
+      $('.lazyload-js').each(function () {
+        ctx.res.write(
+          `<script class="lazyload-js" src="${$(this).attr('src')}"></script>`//吐需要的js
+        );
+      });
+      ctx.res.end();
+    } else {
+      function createSSRStreamPromise() {
+        console.log('落地页');
+        return new Promise((resolve, reject) => {
+          const htmlStream = new Readable();
+          htmlStream.push(html);
+          htmlStream.push(null);
+          ctx.status = 200;
+          ctx.type = 'html';
+          htmlStream
+            .on('error', (err) => {
+              reject(err);
+            })
+            .pipe(ctx.res);
+        });
+      }
+      await createSSRStreamPromise();
+      // ctx.body = html;
+    }
+  }
+  @route('/create')
+  @GET()
+  async actionCreate(ctx) {
+    ctx.body = await ctx.render('books/pages/create');
+  }
+}
+export default BooksController;
+
+```
+
+### 如何处理事件绑定
+如果DOM是js动态添加的，这个时候事件绑定有时会失效。这个时候需要做一层代理，把事件代理到顶层document上。
+```javascript
+const list = {
+  init() {
+    $('#js-btn').click(function () {
+      alert('数据加载成功');
+    });
+  },
+};
+export default list;
+
+```
+解决办法:
+```javascript
+const list = {
+  init() {
+    $(document).on('click', '#js-btn', function (event) {
+      // $('#js-btn').click(function () {
+      alert('数据加载成功');
+    });
+    console.log('list');
+  },
+};
+export default list;
+```
+
+react的事件绑定也是绑定到document上。
