@@ -44,10 +44,14 @@ FP: 仅有一个 div 根节点
 FCP: 包含页面的基本框架，但没有数据内容
 FMP: 包含页面所有元素及数据
 
+
+
 ### long task
 
 通过火焰图可以看到具体页面里什么有影响。
 ![](./images/chrome_long_task.png)
+
+
 
 ## 白屏产生原因
 
@@ -60,7 +64,9 @@ SPA 应用 Loading JS 的过程会导致白屏，同构应用中如果后台在�
 
 ## 如何获取这些指标
 
-- performance.timing
+- performanceTracer Chrome插件 有点简单
+- PageSpeed  Chrome插件  也不太够用
+- performance.timing 专业的
 
 ```javascript
 <script>
@@ -144,7 +150,7 @@ SPA 应用 Loading JS 的过程会导致白屏，同构应用中如果后台在�
 
 - tti-polyfill
 
-## 总结
+### 总结
 ![](./images/render_param_summary.png)
 
 - 雅虎军规
@@ -152,4 +158,23 @@ SPA 应用 Loading JS 的过程会导致白屏，同构应用中如果后台在�
 - 页面加载
 - Node加载
 - 慎用缓存
+
+## Timeline帧渲染模式
+网页动画能够做到每秒60帧，就会和显示器同步刷新。1秒之内进行60次重新渲染，每次重新渲染的时间不能超过16.66ms。
+
+Timeline中有四种颜色，分别表示：
+- 蓝色：网络通信和HTML解析
+- 黄色：JavaScript执行
+- 紫色：样式计算和布局，即重排
+- 绿色：重绘
+
+我们知道，使用setTimeout和setIntervel的时候实际情况并不会按照我们设想的那样运行。早期的浏览器setIntervel的执行间隔是15.8ms左右，浏览器刷新的间隔是16.66ms的话，系统拿出两个15.8来执行一次刷新。js中有一个同步事件队列，也会导致不准。浏览器提供了window.requestAnimationFrame()，让我们可以在浏览器下一帧渲染的时候执行, window.requestIdleCallback，可以在下几次重新渲染时执行。这样可以让浏览器渲染效率最大化。
+
+### 触发分层
+实际的网页是分层的。网页是如何渲染的？首先获取DOM并将其分割成多个层，将每个层独立的绘制进位图中。如果GPU参与处理，渲染过程会加快，将层作为纹理上传至GPU，复合多个层来生成最终的屏幕图像。
+
+1. DOM子树渲染层 (RenderLayer) -> RenderObject -> GraphicsContext （根元素，position（absolute relative， fix不是）, tranform, 半透明， css滤镜， Canvas2D, video，溢出都会触发RenderLayer）
+2. Compositor -> 渲染层子树的图形层(GraphicsLayer) => RenderLayer -> RenderObject。Compositor将所有的拥有compositing layer进行合成，合成过程GPU参与。合成完毕就能将纹理映射到一个网络几何结构上。在视频游戏或者CAD程序中，这种技术用来给框架式的3D模型添加皮肤。Chrome采用纹理把页面中的内容分块发送给GPU，纹理能够以很低的代价映射到不同的位置，而且还能以很低的代价通过把他们应用到一个简单的矩形网格中进行变形。这就是CSS 3D的实现原理。
+（什么时候会触发合成？CSS 3D透视变换,video, webgl,transform动画,加速css滤镜）
+
   

@@ -82,3 +82,21 @@ nginx默认会开启etag。如果要关闭可以配置：
 ```shell
     etag off; 
 ```
+
+
+1. 上线时的配置业务js
+```shell
+    gzip on;
+    etag on;
+```
+
+2. 图片
+```javascript
+    location ~\.(gif|jpg|jpeg|png|bmp|ico)$ {
+        root /var/www/img/;
+        expires 30d;
+    }
+
+```
+
+
