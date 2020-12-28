@@ -51,7 +51,30 @@
 ### webpack怎么配置
 
 
+## 兼容Android5.0的babel配置
+```javascript
+{
+  "presets": [
+    ["@babel/preset-react"],
+    [
+      "@babel/preset-env",
+      { "targets": { "android": "4.4.1" }, "modules": false }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-syntax-dynamic-import",
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
+    ["@babel/plugin-proposal-class-properties", { "loose": true }],
+    "@babel/plugin-transform-runtime",
+    ["import", { "libraryName": "antd-mobile", "style": "css" }] // `style: true` 会加载 less 文件
+  ]
+}
+
+
+```
 
 ## 热部署
+
+
 
 

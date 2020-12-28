@@ -1,0 +1,4 @@
+# React源码分析三-hooks
+在没有Hooks之前，函数式组件不支持state,也没有生命周期，所有的属性只能通过Props传递。Hooks可以让我们在函数式组件里面使用state且支持生命周期。写函数式组件可以比类组件减少约40%左右的代码量。
+
+常用的Hooks有 useState, useEffect, useRef, useCallback, useMemo等。useEffect相当于componentDidMount+componentDidupdate+componentWillUnmount三个生命周期的集合。useEffect第二个参数传[]，相当于componentDidMount, 传[data] 相当于componentDidupdate, return函数相当于componentWillUnmount。
