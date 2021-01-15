@@ -51,7 +51,13 @@
 ### webpack怎么配置
 
 
-## 兼容Android5.0的babel配置
+## 兼容Android5.0的配置
+- display grid
+- overflow:auto
+
+- babel配置
+
+
 ```javascript
 {
   "presets": [
@@ -75,6 +81,31 @@
 
 ## 热部署
 
+## Webpack5升级问题
+1. 默认输出的是es6语法的js，需要配置 target:['web', 'es5']，兼容低版本
+2. 解决打包mjs库文件报错
+```javascript
+    rules: [
+      {
+        test: /\.m?js/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+```
+
+3. 单独抽取assets
+```javascript
+  module: {
+    {
+        test: /\.(png|jpg|jpeg|gif|eot|woff|woff2|ttf|svg|otf)$/,
+        type: 'asset',
+      }, 
+  }
+  experiments: {
+    asset: true,
+  },
+```
 
 
 
