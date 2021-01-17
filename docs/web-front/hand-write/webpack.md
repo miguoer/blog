@@ -58,6 +58,7 @@ class Compiler {
     this.modules.map((_module) => {
       _module.dependencies.map((dependency) => {
         // console.log('✨', _module);
+        // 展平所有的依赖
         this.modules.push(compilation.buildModule(dependency, false));
       });
     });
@@ -102,7 +103,10 @@ class Compilation {
     } else {
       ast = Parser.ast(fileName);
     }
+    // 拿到所有的依赖
     const dependencies = Parser.getDependency(ast);
+
+    // transform之后的代码
     const transformCode = Parser.transform(ast);
     return {
       fileName,
