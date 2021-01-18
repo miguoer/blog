@@ -1,13 +1,16 @@
-# React源码二 - render
-## React Fiber思路
-为什么要用Fiber调度，它解决了什么问题？
-1. React16以前的调用算法，采用自顶向下递归，更新整个子树。这个过程不可打断，不可取消。如果子树特别大的话，主线程就会一直被占用，会造成页面的掉帧，出现卡顿。
-2. React16推出的Fiber调度分为两个阶段，一个是Reconciliation阶段，二是commit阶段。
-3. Reconciliation阶段：Fiber调度在执行过程中以Fiber为基本单位，每执行完一个Fiber，都会有一个询问是否有优先级更高的任务的一个判断，如果有优先级更高的任务进来，就中断当前执行，先执行优先级更高的任务。这个阶段会进行DOM Diff，生成workInProgressTree，并标记好所有的side effect。
-    2.1 数组结构变成了链表结构
-    2.1 任务+过期时间/优先级
-    2.2 reconciliation可以被打断，不会渲染到页面上的；commit阶段，一次执行完。side effect
-4. commit阶段，处理所有的 side effect ， 执行更新操作。此阶段不可中断
+# React 源码二 - render
+
+## React Fiber 思路
+
+为什么要用 Fiber 调度，它解决了什么问题？
+
+1. React16 以前的调用算法，采用自顶向下递归，更新整个子树。这个过程不可打断，不可取消。如果子树特别大的话，主线程就会一直被占用，会造成页面的掉帧，出现卡顿。
+2. React16 推出的 Fiber 调度分为两个阶段，一个是 Reconciliation 阶段，二是 commit 阶段。
+3. Reconciliation 阶段：Fiber 调度在执行过程中以 Fiber 为基本单位，每执行完一个 Fiber，都会有一个询问是否有优先级更高的任务的一个判断，如果有优先级更高的任务进来，就中断当前执行，先执行优先级更高的任务。这个阶段会进行 DOM Diff，生成 workInProgressTree，并标记好所有的 side effect。
+   2.1 数组结构变成了链表结构
+   2.1 任务+过期时间/优先级
+   2.2 reconciliation 可以被打断，不会渲染到页面上的；commit 阶段，一次执行完。side effect
+4. commit 阶段，处理所有的 side effect ， 执行更新操作。此阶段不可中断
 
 ## ReactDOM.render
 
@@ -18,12 +21,12 @@
 export function render(
   element: React$Element<any>,
   container: Container,
-  callback: ?Function,
+  callback: ?Function
 ) {
   //1. 判断容器节点是否合法
   invariant(
     isValidContainer(container),
-    'Target container is not a DOM element.',
+    "Target container is not a DOM element."
   );
   if (__DEV__) {
     const isModernRoot =
@@ -31,9 +34,9 @@ export function render(
       container._reactRootContainer === undefined;
     if (isModernRoot) {
       console.error(
-        'You are calling ReactDOM.render() on a container that was previously ' +
-          'passed to ReactDOM.createRoot(). This is not supported. ' +
-          'Did you mean to call root.render(element)?',
+        "You are calling ReactDOM.render() on a container that was previously " +
+          "passed to ReactDOM.createRoot(). This is not supported. " +
+          "Did you mean to call root.render(element)?"
       );
     }
   }
@@ -44,12 +47,13 @@ export function render(
     element,
     container,
     false,
-    callback,
+    callback
   );
 }
 ```
-render方法判断了容器节点的合法性，然后直接调用了legacyRenderSubtreeIntoContainer方法。
-接下来看下legacyRenderSubtreeIntoContainer方法:
+
+render 方法判断了容器节点的合法性，然后直接调用了 legacyRenderSubtreeIntoContainer 方法。
+接下来看下 legacyRenderSubtreeIntoContainer 方法:
 
 ```javascript
 /**
@@ -65,11 +69,11 @@ function legacyRenderSubtreeIntoContainer(
   children: ReactNodeList,
   container: Container,
   forceHydrate: boolean,
-  callback: ?Function,
+  callback: ?Function
 ) {
   if (__DEV__) {
     topLevelUpdateWarnings(container);
-    warnOnInvalidCallback(callback === undefined ? null : callback, 'render');
+    warnOnInvalidCallback(callback === undefined ? null : callback, "render");
   }
 
   // TODO: Without `any` type, Flow says "Property cannot be accessed on any
@@ -81,15 +85,15 @@ function legacyRenderSubtreeIntoContainer(
     // 创建ReactRoot，在DOM元素上挂载
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
-      forceHydrate,
+      forceHydrate
     );
 
     //取到fiberRoot节点
     fiberRoot = root._internalRoot;
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       //封装callback函数
       const originalCallback = callback;
-      callback = function () {
+      callback = function() {
         const instance = getPublicRootInstance(fiberRoot);
         originalCallback.call(instance);
       };
@@ -102,9 +106,9 @@ function legacyRenderSubtreeIntoContainer(
     });
   } else {
     fiberRoot = root._internalRoot;
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       const originalCallback = callback;
-      callback = function () {
+      callback = function() {
         const instance = getPublicRootInstance(fiberRoot);
         originalCallback.call(instance);
       };
@@ -116,9 +120,10 @@ function legacyRenderSubtreeIntoContainer(
 }
 ```
 
-可以看到，第一次加载和非第一次加载流程，主要区别就在第一次加载是unbatchedUpdates。
+可以看到，第一次加载和非第一次加载流程，主要区别就在第一次加载是 unbatchedUpdates。
 
 ### unbatchedUpdates
+
 ```javascript
 export function unbatchedUpdates<A, R>(fn: (a: A) => R, a: A): R {
   //执行上下文 executionContext 内部的一个闭包，挂载在react里，在不同的阶段会打上不同的标记
@@ -139,7 +144,6 @@ export function unbatchedUpdates<A, R>(fn: (a: A) => R, a: A): R {
     }
   }
 }
-
 ```
 
 ```javascript
@@ -185,7 +189,7 @@ function flushSyncCallbackQueueImpl() {
         // Resume flushing in the next tick
         Scheduler_scheduleCallback(
           Scheduler_ImmediatePriority,
-          flushSyncCallbackQueue,
+          flushSyncCallbackQueue
         );
         throw error;
       } finally {
@@ -213,7 +217,7 @@ function flushSyncCallbackQueueImpl() {
         // Resume flushing in the next tick
         Scheduler_scheduleCallback(
           Scheduler_ImmediatePriority,
-          flushSyncCallbackQueue,
+          flushSyncCallbackQueue
         );
         throw error;
       } finally {
@@ -225,12 +229,13 @@ function flushSyncCallbackQueueImpl() {
     return false;
   }
 }
-
 ```
 
 ### updateContainer
+
 ```javascript
-// updateContainer返回的Lane是啥？16.3的返回的是ExpirationTime
+// updateContainer返回的Lane是啥？16.3的返回的是ExpirationTime。
+// Lane是React17中重新定义的优先级类型，一个Lane可能会包含多种优先级任务
 // updateContainer做了下面几件事
 //1. 拿到第一个创建的FiberNode
 //2. 获取到当前Fiber节点的Lane Lane是一个标志优先级的类型  和render的模式也有关系
@@ -240,7 +245,7 @@ export function updateContainer(
   element: ReactNodeList,
   container: OpaqueRoot,
   parentComponent: ?React$Component<any, any>,
-  callback: ?Function,
+  callback: ?Function
 ): Lane {
   if (__DEV__) {
     onScheduleRoot(container, element);
@@ -250,7 +255,7 @@ export function updateContainer(
   const eventTime = requestEventTime();
   if (__DEV__) {
     // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-    if ('undefined' !== typeof jest) {
+    if ("undefined" !== typeof jest) {
       warnIfUnmockedScheduler(current);
       warnIfNotScopedWithMatchingAct(current);
     }
@@ -277,11 +282,11 @@ export function updateContainer(
     ) {
       didWarnAboutNestedUpdates = true;
       console.error(
-        'Render methods should be a pure function of props and state; ' +
-          'triggering nested component updates from render is not allowed. ' +
-          'If necessary, trigger nested updates in componentDidUpdate.\n\n' +
-          'Check the render method of %s.',
-        getComponentName(ReactCurrentFiberCurrent.type) || 'Unknown',
+        "Render methods should be a pure function of props and state; " +
+          "triggering nested component updates from render is not allowed. " +
+          "If necessary, trigger nested updates in componentDidUpdate.\n\n" +
+          "Check the render method of %s.",
+        getComponentName(ReactCurrentFiberCurrent.type) || "Unknown"
       );
     }
   }
@@ -290,16 +295,16 @@ export function updateContainer(
   const update = createUpdate(eventTime, lane);
   // Caution: React DevTools currently depends on this property
   // being called "element".
-  update.payload = {element};
+  update.payload = { element };
 
   callback = callback === undefined ? null : callback;
   if (callback !== null) {
     if (__DEV__) {
-      if (typeof callback !== 'function') {
+      if (typeof callback !== "function") {
         console.error(
-          'render(...): Expected the last optional `callback` argument to be a ' +
-            'function. Instead received: %s.',
-          callback,
+          "render(...): Expected the last optional `callback` argument to be a " +
+            "function. Instead received: %s.",
+          callback
         );
       }
     }
@@ -315,6 +320,7 @@ export function updateContainer(
 ```
 
 ### scheduleUpdateOnFiber
+
 ```javascript
 /**
  * 1. 找到FiberRoot
@@ -330,7 +336,7 @@ export function updateContainer(
 export function scheduleUpdateOnFiber(
   fiber: Fiber,
   lane: Lane,
-  eventTime: number,
+  eventTime: number
 ) {
   // 检测最新的更新次数
   checkForNestedUpdates();
@@ -360,7 +366,7 @@ export function scheduleUpdateOnFiber(
     ) {
       workInProgressRootUpdatedLanes = mergeLanes(
         workInProgressRootUpdatedLanes,
-        lane,
+        lane
       );
     }
     if (workInProgressRootExitStatus === RootSuspendedWithDelay) {
@@ -408,7 +414,7 @@ export function scheduleUpdateOnFiber(
         // updates, to preserve historical behavior of legacy mode.
         // 立即更新同步队列
         // 故意将其放置在scheduleUpdateOnFiber而不是scheduleCallbackForFiber内，
-        // 以保留在不立即刷新回调的情况下调度回调的功能。 
+        // 以保留在不立即刷新回调的情况下调度回调的功能。
         // 我们仅对用户启动的更新执行此操作，以保留旧版模式的历史行为。
         resetRenderTimer();
         flushSyncCallbackQueue();
@@ -446,7 +452,7 @@ export function scheduleUpdateOnFiber(
 }
 ```
 
-同步更新最后执行的是performSyncWorkOnRoot方法，这个方法里做了很多重要的事情，比如DOM Diff，生命周期。 这块内容放在下个小节分析。如果不是同步更新的，会走 ensureRootIsScheduled 和 schedulePendingInteractions。 这两个方法都属于异步处理的流程。
+同步更新最后执行的是 performSyncWorkOnRoot 方法，这个方法里做了很多重要的事情，比如 DOM Diff，生命周期。 这块内容放在下个小节分析。如果不是同步更新的，会走 ensureRootIsScheduled 和 schedulePendingInteractions。 这两个方法都属于异步处理的流程。
 
 ### ensureRootIsScheduled
 
@@ -479,7 +485,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   // 获取下一步的lanes，并计算他们的优先级
   const nextLanes = getNextLanes(
     root,
-    root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
+    root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes
   );
   // This returns the priority level computed during the `getNextLanes` call.
   // 拿到下一步Lanes中最高的任务优先级
@@ -522,24 +528,24 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     //1. 同步任务 把callback添加到syncQueue中。
     //2. 以Scheduler_ImmediatePriority 调用Scheduler_scheduleCallback
     newCallbackNode = scheduleSyncCallback(
-      performSyncWorkOnRoot.bind(null, root),
+      performSyncWorkOnRoot.bind(null, root)
     );
   } else if (newCallbackPriority === SyncBatchedLanePriority) {
     //如果是同步的批处理任务 以ImmediateSchedulerPriority 调用Scheduler_scheduleCallback
     //最高优先级，属于即时任务。SyncLanePriority和SyncBatchedLanePriority最终都对应了ImmediateSchedulerPriority
     newCallbackNode = scheduleCallback(
       ImmediateSchedulerPriority,
-      performSyncWorkOnRoot.bind(null, root),
+      performSyncWorkOnRoot.bind(null, root)
     );
   } else {
     // 需要调度的任务， 将lane优先级转换为调度器的优先级
     const schedulerPriorityLevel = lanePriorityToSchedulerPriority(
-      newCallbackPriority,
+      newCallbackPriority
     );
     // 添加到调度器
     newCallbackNode = scheduleCallback(
       schedulerPriorityLevel,
-      performConcurrentWorkOnRoot.bind(null, root),
+      performConcurrentWorkOnRoot.bind(null, root)
     );
   }
 
@@ -548,9 +554,10 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   root.callbackNode = newCallbackNode;
 }
 ```
-这个方法最终执行了两个方法scheduleSyncCallback和scheduleCallback。
 
-scheduleSyncCallback会判断同步队列是否=== null。如果是null，说明还没有发起过sync调度，则发起一个Scheduler_ImmediatePriority的调度。否则，就把同步任务添加到同步队列。同步队列中的任务会在 next tick时执行或者别的地方调用了`flushSyncCallbackQueue`的时候执行。
+这个方法最终执行了两个方法 scheduleSyncCallback 和 scheduleCallback。
+
+scheduleSyncCallback 会判断同步队列是否=== null。如果是 null，说明还没有发起过 sync 调度，则发起一个 Scheduler_ImmediatePriority 的调度。否则，就把同步任务添加到同步队列。同步队列中的任务会在 next tick 时执行或者别的地方调用了`flushSyncCallbackQueue`的时候执行。
 
 ```javascript
 export function scheduleSyncCallback(callback: SchedulerCallback) {
@@ -562,7 +569,7 @@ export function scheduleSyncCallback(callback: SchedulerCallback) {
     immediateQueueCallbackNode = Scheduler_scheduleCallback(
       Scheduler_ImmediatePriority,
       // 会循环执行syncQueue的callBack
-      flushSyncCallbackQueueImpl,
+      flushSyncCallbackQueueImpl
     );
   } else {
     // Push onto existing queue. Don't need to schedule a callback because
@@ -572,6 +579,7 @@ export function scheduleSyncCallback(callback: SchedulerCallback) {
   return fakeCallbackNode;
 }
 ```
+
 Scheduler_scheduleCallback 方法是处理所有调度任务的地方。来看看它的源码。
 
 ### unstable_scheduleCallback
@@ -584,19 +592,19 @@ Scheduler_scheduleCallback 方法是处理所有调度任务的地方。来看�
  * 3. 根据task.startTime和currentTime的比较，处理延时任务和即时任务
  * 4. 延迟任务如果有需要执行requestHostTimeout 即时任务有需要执行requestHostCallback
  * 5. 请求主线程回调，或者主线程延时回调
- * @param {*} priorityLevel 
- * @param {*} callback 
- * @param {*} options 
+ * @param {*} priorityLevel
+ * @param {*} callback
+ * @param {*} options
  */
 function unstable_scheduleCallback(priorityLevel, callback, options) {
   var currentTime = getCurrentTime();
 
   var startTime;
-  if (typeof options === 'object' && options !== null) {
+  if (typeof options === "object" && options !== null) {
     var delay = options.delay;
     // 如果有delay参数，则是延时任务，startTime=currentTime + delay
 
-    if (typeof delay === 'number' && delay > 0) {
+    if (typeof delay === "number" && delay > 0) {
       startTime = currentTime + delay;
     } else {
       startTime = currentTime;
@@ -680,25 +688,24 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
 
   return newTask;
 }
-
 ```
 
-逻辑走到了requestHostCallback。
+逻辑走到了 requestHostCallback。
 
 ### requestHostCallback
 
-requstHostCallback定义在了SchedulerHostConfig.default。通过查看里面的源码可以知道，这个方法根据当前的执行环境是否在node端或者浏览器是否支持MessageChannel来使用不同的实现。如果是在node端或者不支持MessageChannel，则用setTimeOut实现。setTimeout的任务也是宏任务。
+requstHostCallback 定义在了 SchedulerHostConfig.default。通过查看里面的源码可以知道，这个方法根据当前的执行环境是否在 node 端或者浏览器是否支持 MessageChannel 来使用不同的实现。如果是在 node 端或者不支持 MessageChannel，则用 setTimeOut 实现。setTimeout 的任务也是宏任务。
 
-如果支持MessageChannel， requstHostCallback会用MessageChannel实现。MessageChannel也属于宏任务，它允许我们创建一个新的消息通道，并通过它的两个MessagePort 属性发送数据。
+如果支持 MessageChannel， requstHostCallback 会用 MessageChannel 实现。MessageChannel 也属于宏任务，它允许我们创建一个新的消息通道，并通过它的两个 MessagePort 属性发送数据。
 
 ```javascript
 if (
   // If Scheduler runs in a non-DOM environment, it falls back to a naive
   // implementation using setTimeout.
-  typeof window === 'undefined' ||
+  typeof window === "undefined" ||
   // Check if MessageChannel is supported, too.
-  //判断浏览器是否支持 MessageChannel 
-  typeof MessageChannel !== 'function'
+  //判断浏览器是否支持 MessageChannel
+  typeof MessageChannel !== "function"
 ) {
   // 不支持MessageChannel或者是在node环境运行的时候使用setTimeout实现
   // If this accidentally gets imported in a non-browser environment, e.g. JavaScriptCore,
@@ -746,27 +753,27 @@ if (
   const setTimeout = window.setTimeout;
   const clearTimeout = window.clearTimeout;
 
-  if (typeof console !== 'undefined') {
+  if (typeof console !== "undefined") {
     // TODO: Scheduler no longer requires these methods to be polyfilled. But
     // maybe we want to continue warning if they don't exist, to preserve the
     // option to rely on it in the future?
     const requestAnimationFrame = window.requestAnimationFrame;
     const cancelAnimationFrame = window.cancelAnimationFrame;
 
-    if (typeof requestAnimationFrame !== 'function') {
+    if (typeof requestAnimationFrame !== "function") {
       // Using console['error'] to evade Babel and ESLint
-      console['error'](
+      console["error"](
         "This browser doesn't support requestAnimationFrame. " +
-          'Make sure that you load a ' +
-          'polyfill in older browsers. https://reactjs.org/link/react-polyfills',
+          "Make sure that you load a " +
+          "polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
     }
-    if (typeof cancelAnimationFrame !== 'function') {
+    if (typeof cancelAnimationFrame !== "function") {
       // Using console['error'] to evade Babel and ESLint
-      console['error'](
+      console["error"](
         "This browser doesn't support cancelAnimationFrame. " +
-          'Make sure that you load a ' +
-          'polyfill in older browsers. https://reactjs.org/link/react-polyfills',
+          "Make sure that you load a " +
+          "polyfill in older browsers. https://reactjs.org/link/react-polyfills"
       );
     }
   }
@@ -836,9 +843,9 @@ if (
   forceFrameRate = function(fps) {
     if (fps < 0 || fps > 125) {
       // Using console['error'] to evade Babel and ESLint
-      console['error'](
-        'forceFrameRate takes a positive int between 0 and 125, ' +
-          'forcing frame rates higher than 125 fps is not supported',
+      console["error"](
+        "forceFrameRate takes a positive int between 0 and 125, " +
+          "forcing frame rates higher than 125 fps is not supported"
       );
       return;
     }
@@ -861,7 +868,7 @@ if (
       try {
         const hasMoreWork = scheduledHostCallback(
           hasTimeRemaining,
-          currentTime,
+          currentTime
         );
         if (!hasMoreWork) {
           isMessageLoopRunning = false;
@@ -913,55 +920,54 @@ if (
   };
 }
 ```
-在channel.port1接收到发来的消息后，会调用performWorkUntilDeadline。
+
+在 channel.port1 接收到发来的消息后，会调用 performWorkUntilDeadline。
 
 ### performWorkUntilDeadline
-```javascript
-  // 1. 执行flushwork
-  // 2. 判断有没有更多的任务，有更多的任务，在下一个事件循环里再继续调用performWorkUntilDeadline（异步的递归）
-  const performWorkUntilDeadline = () => {
-    if (scheduledHostCallback !== null) {
-      const currentTime = getCurrentTime();
-      // Yield after `yieldInterval` ms, regardless of where we are in the vsync
-      // cycle. This means there's always time remaining at the beginning of
-      // the message event.
-      // 设置截止时间，刚开始为5ms，后面渐渐动态调整
-      deadline = currentTime + yieldInterval;
-      const hasTimeRemaining = true;
-      try {
-        // scheduledHostCallback为传入的callback，此处为flushWork
-        // 执行flushwork——递归执行taskQuene里的callBack，也就是 performSyncWorkOnRoot
-        const hasMoreWork = scheduledHostCallback(
-          hasTimeRemaining,
-          currentTime,
-        );
-        if (!hasMoreWork) {
-          // 没有更多任务, 重置消息循环状态, 清空回调函数
-          isMessageLoopRunning = false;
-          scheduledHostCallback = null;
-        } else {
-          // If there's more work, schedule the next message event at the end
-          // of the preceding one.
-          // 有更多任务，在下一个循环里继续调度
-          port.postMessage(null);
-        }
-      } catch (error) {
-        // If a scheduler task throws, exit the current browser task so the
-        // error can be observed.
-        port.postMessage(null);
-        throw error;
-      }
-    } else {
-      isMessageLoopRunning = false;
-    }
-    // Yielding to the browser will give it a chance to paint, so we can
-    // reset this.
-    needsPaint = false;
-  };
 
+```javascript
+// 1. 执行flushwork
+// 2. 判断有没有更多的任务，有更多的任务，在下一个事件循环里再继续调用performWorkUntilDeadline（异步的递归）
+const performWorkUntilDeadline = () => {
+  if (scheduledHostCallback !== null) {
+    const currentTime = getCurrentTime();
+    // Yield after `yieldInterval` ms, regardless of where we are in the vsync
+    // cycle. This means there's always time remaining at the beginning of
+    // the message event.
+    // 设置截止时间，刚开始为5ms，后面渐渐动态调整
+    deadline = currentTime + yieldInterval;
+    const hasTimeRemaining = true;
+    try {
+      // scheduledHostCallback为传入的callback，此处为flushWork
+      // 执行flushwork——递归执行taskQuene里的callBack，也就是 performSyncWorkOnRoot
+      const hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
+      if (!hasMoreWork) {
+        // 没有更多任务, 重置消息循环状态, 清空回调函数
+        isMessageLoopRunning = false;
+        scheduledHostCallback = null;
+      } else {
+        // If there's more work, schedule the next message event at the end
+        // of the preceding one.
+        // 有更多任务，在下一个循环里继续调度
+        port.postMessage(null);
+      }
+    } catch (error) {
+      // If a scheduler task throws, exit the current browser task so the
+      // error can be observed.
+      port.postMessage(null);
+      throw error;
+    }
+  } else {
+    isMessageLoopRunning = false;
+  }
+  // Yielding to the browser will give it a chance to paint, so we can
+  // reset this.
+  needsPaint = false;
+};
 ```
 
-scheduledHostCallback就是requestHostCallback传进来的flushWork。
+scheduledHostCallback 就是 requestHostCallback 传进来的 flushWork。
+
 ```javascript
 function flushWork(hasTimeRemaining, initialTime) {
   if (enableProfiling) {
@@ -1005,7 +1011,8 @@ function flushWork(hasTimeRemaining, initialTime) {
   }
 }
 ```
-可以看到flushWork就是调用了workLoop。那workLoop又做了什么？
+
+可以看到 flushWork 就是调用了 workLoop。那 workLoop 又做了什么？
 
 ```javascript
 // 1. 根据当前时间把timeQuene里的任务添加到taskQuene中来
@@ -1030,7 +1037,7 @@ function workLoop(hasTimeRemaining, initialTime) {
       break;
     }
     const callback = currentTask.callback;
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       currentTask.callback = null;
       currentPriorityLevel = currentTask.priorityLevel;
       const didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
@@ -1038,7 +1045,7 @@ function workLoop(hasTimeRemaining, initialTime) {
       // 执行callback 也就是flushSyncCallbackQueueImpl 这里面会遍历同步队列执行里面的任务
       const continuationCallback = callback(didUserCallbackTimeout);
       currentTime = getCurrentTime();
-      if (typeof continuationCallback === 'function') {
+      if (typeof continuationCallback === "function") {
         currentTask.callback = continuationCallback;
         markTaskYield(currentTask, currentTime);
       } else {
@@ -1070,7 +1077,8 @@ function workLoop(hasTimeRemaining, initialTime) {
   }
 }
 ```
-如果taskQueue中还有任务，会继续调用前面的MessageChannel发送消息，知道所有taskQueue中的任务执行完。执行完后，会走requestHostTimeout。requestHostTimeout就是使用了setTimeout执行handleTimeout函数。
+
+如果 taskQueue 中还有任务，会继续调用前面的 MessageChannel 发送消息，知道所有 taskQueue 中的任务执行完。执行完后，会走 requestHostTimeout。requestHostTimeout 就是使用了 setTimeout 执行 handleTimeout 函数。
 
 ```javascript
 function handleTimeout(currentTime) {
@@ -1095,6 +1103,7 @@ function handleTimeout(currentTime) {
 ```
 
 ### schedulePendingInteractions(无关紧要)
+
 ```javascript
 function schedulePendingInteractions(root: FiberRoot, lane: Lane | Lanes) {
   // This is called when work is scheduled on a root.
@@ -1108,13 +1117,14 @@ function schedulePendingInteractions(root: FiberRoot, lane: Lane | Lanes) {
   scheduleInteractions(root, lane, __interactionsRef.current);
 }
 ```
-如果开启了调度器tracing 主要执行了scheduleInteractions方法:
+
+如果开启了调度器 tracing 主要执行了 scheduleInteractions 方法:
 
 ```javascript
 function scheduleInteractions(
   root: FiberRoot,
   lane: Lane | Lanes,
-  interactions: Set<Interaction>,
+  interactions: Set<Interaction>
 ) {
   if (!enableSchedulerTracing) {
     return;
@@ -1145,7 +1155,7 @@ function scheduleInteractions(
 
     const subscriber = __subscriberRef.current;
     if (subscriber !== null) {
-       // 利用线程去查看同步的更新任务是否会报错
+      // 利用线程去查看同步的更新任务是否会报错
       const threadID = computeThreadID(root, lane);
       subscriber.onWorkScheduled(interactions, threadID);
     }
@@ -1153,7 +1163,7 @@ function scheduleInteractions(
 }
 ```
 
-异步流程到这里就结束了。之后的操作都走到performSyncWorkOnRoot里。
+异步流程到这里就结束了。之后的操作都走到 performSyncWorkOnRoot 里。
 
 ### 同步流程 performSyncWorkOnRoot
 
@@ -1168,7 +1178,7 @@ function scheduleInteractions(
 function performSyncWorkOnRoot(root) {
   invariant(
     (executionContext & (RenderContext | CommitContext)) === NoContext,
-    'Should not already be working.',
+    "Should not already be working."
   );
 
   flushPassiveEffects();
@@ -1187,7 +1197,7 @@ function performSyncWorkOnRoot(root) {
     if (
       includesSomeLane(
         workInProgressRootIncludedLanes,
-        workInProgressRootUpdatedLanes,
+        workInProgressRootUpdatedLanes
       )
     ) {
       // The render included lanes that were updated during the render phase.
@@ -1256,7 +1266,9 @@ function performSyncWorkOnRoot(root) {
   return null;
 }
 ```
-根据不同的lanes，执行renderRootSync方法。
+
+根据不同的 lanes，执行 renderRootSync 方法。
+
 ```javascript
 /**
  * 1. 判断fiberRoot或者lanes是否发生了变化，如果发生了变化 准备一个新的栈
@@ -1310,8 +1322,8 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     // This is a sync render, so we should have finished the whole tree.
     invariant(
       false,
-      'Cannot commit an incomplete root. This error is likely caused by a ' +
-        'bug in React. Please file an issue.',
+      "Cannot commit an incomplete root. This error is likely caused by a " +
+        "bug in React. Please file an issue."
     );
   }
 
@@ -1332,7 +1344,8 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
   return workInProgressRootExitStatus;
 }
 ```
-接下来主要逻辑都在workLoopSync中。workLoopSync是一个递归，递归调用performUnitOfWork。
+
+接下来主要逻辑都在 workLoopSync 中。workLoopSync 是一个递归，递归调用 performUnitOfWork。
 
 ```javascript
 // The work loop is an extremely hot path. Tell Closure not to inline it.
@@ -1348,7 +1361,8 @@ function workLoopSync() {
 ```
 
 ### performUnitOfWork
-performUnitOfWork 首先调用beginWork, 在beginWork创建Fiber节点，如果next节点不为空，则继续处理next节点。直到next为null说明已经创建完整的Fiber Tree了，之后调用completeUnitOfWork，创建DOM对象等。
+
+performUnitOfWork 首先调用 beginWork, 在 beginWork 创建 Fiber 节点，如果 next 节点不为空，则继续处理 next 节点。直到 next 为 null 说明已经创建完整的 Fiber Tree 了，之后调用 completeUnitOfWork，创建 DOM 对象等。
 
 ```javascript
 /**
@@ -1405,12 +1419,13 @@ function performUnitOfWork(unitOfWork: Fiber): void {
 ```
 
 - beginWork
-  1. 第一次执行创建Fiber节点
-  2. 非初次执行则进行diff，打上Effect更新标记
-  3. 执行render之前的声明周期，以及执行render生命周期，获得子节点继续循环执行beginWork
-  4. 链接上父级节点，形成Fiber Tree
+  1. 第一次执行创建 Fiber 节点
+  2. 非初次执行则进行 diff，打上 Effect 更新标记
+  3. 执行 render 之前的声明周期，以及执行 render 生命周期，获得子节点继续循环执行 beginWork
+  4. 链接上父级节点，形成 Fiber Tree
 
-beginWork是一个各种react类型处理逻辑的聚合。
+beginWork 是一个各种 react 类型处理逻辑的聚合。
+
 ```javascript
 /**
  * 1. 对比props是否有变化，给didReceiveUpdate赋值
@@ -1422,7 +1437,7 @@ beginWork是一个各种react类型处理逻辑的聚合。
 function beginWork(
   current: Fiber | null,
   workInProgress: Fiber,
-  renderLanes: Lanes,
+  renderLanes: Lanes
 ): Fiber | null {
   const updateLanes = workInProgress.lanes;
 
@@ -1438,8 +1453,8 @@ function beginWork(
           workInProgress.pendingProps,
           workInProgress._debugOwner || null,
           workInProgress.mode,
-          workInProgress.lanes,
-        ),
+          workInProgress.lanes
+        )
       );
     }
   }
@@ -1482,7 +1497,7 @@ function beginWork(
         case HostPortal:
           pushHostContainer(
             workInProgress,
-            workInProgress.stateNode.containerInfo,
+            workInProgress.stateNode.containerInfo
           );
           break;
         case ContextProvider: {
@@ -1506,7 +1521,7 @@ function beginWork(
               if (state.dehydrated !== null) {
                 pushSuspenseContext(
                   workInProgress,
-                  setDefaultShallowSuspenseContext(suspenseStackCursor.current),
+                  setDefaultShallowSuspenseContext(suspenseStackCursor.current)
                 );
                 // We know that this component will suspend again because if it has
                 // been unsuspended it has committed as a resolved Suspense component.
@@ -1530,21 +1545,21 @@ function beginWork(
               return updateSuspenseComponent(
                 current,
                 workInProgress,
-                renderLanes,
+                renderLanes
               );
             } else {
               // The primary child fragment does not have pending work marked
               // on it
               pushSuspenseContext(
                 workInProgress,
-                setDefaultShallowSuspenseContext(suspenseStackCursor.current),
+                setDefaultShallowSuspenseContext(suspenseStackCursor.current)
               );
               // The primary children do not have pending work with sufficient
               // priority. Bailout.
               const child = bailoutOnAlreadyFinishedWork(
                 current,
                 workInProgress,
-                renderLanes,
+                renderLanes
               );
               if (child !== null) {
                 // The fallback children have pending work. Skip over the
@@ -1557,7 +1572,7 @@ function beginWork(
           } else {
             pushSuspenseContext(
               workInProgress,
-              setDefaultShallowSuspenseContext(suspenseStackCursor.current),
+              setDefaultShallowSuspenseContext(suspenseStackCursor.current)
             );
           }
           break;
@@ -1567,7 +1582,7 @@ function beginWork(
 
           const hasChildWork = includesSomeLane(
             renderLanes,
-            workInProgress.childLanes,
+            workInProgress.childLanes
           );
 
           if (didSuspendBefore) {
@@ -1580,7 +1595,7 @@ function beginWork(
               return updateSuspenseListComponent(
                 current,
                 workInProgress,
-                renderLanes,
+                renderLanes
               );
             }
             // If none of the children had any work, that means that none of
@@ -1656,7 +1671,7 @@ function beginWork(
         current,
         workInProgress,
         workInProgress.type,
-        renderLanes,
+        renderLanes
       );
     }
     case LazyComponent: {
@@ -1666,7 +1681,7 @@ function beginWork(
         workInProgress,
         elementType,
         updateLanes,
-        renderLanes,
+        renderLanes
       );
     }
     case FunctionComponent: {
@@ -1681,7 +1696,7 @@ function beginWork(
         workInProgress,
         Component,
         resolvedProps,
-        renderLanes,
+        renderLanes
       );
     }
     case ClassComponent: {
@@ -1697,7 +1712,7 @@ function beginWork(
         workInProgress,
         Component,
         resolvedProps,
-        renderLanes,
+        renderLanes
       );
     }
     case HostRoot:
@@ -1722,7 +1737,7 @@ function beginWork(
         workInProgress,
         type,
         resolvedProps,
-        renderLanes,
+        renderLanes
       );
     }
     case Fragment:
@@ -1747,8 +1762,8 @@ function beginWork(
             checkPropTypes(
               outerPropTypes,
               resolvedProps, // Resolved for outer only
-              'prop',
-              getComponentName(type),
+              "prop",
+              getComponentName(type)
             );
           }
         }
@@ -1760,7 +1775,7 @@ function beginWork(
         type,
         resolvedProps,
         updateLanes,
-        renderLanes,
+        renderLanes
       );
     }
     case SimpleMemoComponent: {
@@ -1770,7 +1785,7 @@ function beginWork(
         workInProgress.type,
         workInProgress.pendingProps,
         updateLanes,
-        renderLanes,
+        renderLanes
       );
     }
     case IncompleteClassComponent: {
@@ -1785,7 +1800,7 @@ function beginWork(
         workInProgress,
         Component,
         resolvedProps,
-        renderLanes,
+        renderLanes
       );
     }
     case SuspenseListComponent: {
@@ -1820,20 +1835,22 @@ function beginWork(
   }
   invariant(
     false,
-    'Unknown unit of work tag (%s). This error is likely caused by a bug in ' +
-      'React. Please file an issue.',
-    workInProgress.tag,
+    "Unknown unit of work tag (%s). This error is likely caused by a bug in " +
+      "React. Please file an issue.",
+    workInProgress.tag
   );
 }
 ```
-主要看一个updateClassComponent
+
+主要看一个 updateClassComponent
+
 ```javascript
 function updateClassComponent(
   current: Fiber | null,
   workInProgress: Fiber,
   Component: any,
   nextProps: any,
-  renderLanes: Lanes,
+  renderLanes: Lanes
 ) {
   if (__DEV__) {
     if (workInProgress.type !== workInProgress.elementType) {
@@ -1844,8 +1861,8 @@ function updateClassComponent(
         checkPropTypes(
           innerPropTypes,
           nextProps, // Resolved props
-          'prop',
-          getComponentName(Component),
+          "prop",
+          getComponentName(Component)
         );
       }
     }
@@ -1890,7 +1907,7 @@ function updateClassComponent(
       workInProgress,
       Component,
       nextProps,
-      renderLanes,
+      renderLanes
     );
   } else {
     // 执行render之前的生命周期，render之后的生命周期打上tag标记
@@ -1901,7 +1918,7 @@ function updateClassComponent(
       workInProgress,
       Component,
       nextProps,
-      renderLanes,
+      renderLanes
     );
   }
   // 执行render() 生周期，获取下一个子节点
@@ -1911,16 +1928,16 @@ function updateClassComponent(
     Component,
     shouldUpdate,
     hasContext,
-    renderLanes,
+    renderLanes
   );
   if (__DEV__) {
     const inst = workInProgress.stateNode;
     if (shouldUpdate && inst.props !== nextProps) {
       if (!didWarnAboutReassigningProps) {
         console.error(
-          'It looks like %s is reassigning its own `this.props` while rendering. ' +
-            'This is not supported and can lead to confusing bugs.',
-          getComponentName(workInProgress.type) || 'a component',
+          "It looks like %s is reassigning its own `this.props` while rendering. " +
+            "This is not supported and can lead to confusing bugs.",
+          getComponentName(workInProgress.type) || "a component"
         );
       }
       didWarnAboutReassigningProps = true;
@@ -1929,7 +1946,9 @@ function updateClassComponent(
   return nextUnitOfWork;
 }
 ```
-接下来逻辑在finishClassComponent方法
+
+接下来逻辑在 finishClassComponent 方法
+
 ```javascript
 function finishClassComponent(
   current: Fiber | null,
@@ -1937,7 +1956,7 @@ function finishClassComponent(
   Component: any,
   shouldUpdate: boolean,
   hasContext: boolean,
-  renderLanes: Lanes,
+  renderLanes: Lanes
 ) {
   // Refs should update even if shouldComponentUpdate returns false
   markRef(current, workInProgress);
@@ -1961,7 +1980,7 @@ function finishClassComponent(
   let nextChildren;
   if (
     didCaptureError &&
-    typeof Component.getDerivedStateFromError !== 'function'
+    typeof Component.getDerivedStateFromError !== "function"
   ) {
     // If we captured an error, but getDerivedStateFromError is not defined,
     // unmount all the children. componentDidCatch will schedule an update to
@@ -2007,7 +2026,7 @@ function finishClassComponent(
       current,
       workInProgress,
       nextChildren,
-      renderLanes,
+      renderLanes
     );
   } else {
     reconcileChildren(current, workInProgress, nextChildren, renderLanes);
@@ -2025,7 +2044,9 @@ function finishClassComponent(
   return workInProgress.child;
 }
 ```
-接下来走到reconcilChildren中。
+
+接下来走到 reconcilChildren 中。
+
 ```javascript
 // 1. 初次，则创建Fiber子节点
 // 2. 非初次， 更新Fiber节点，得到Fiber节点， 打上 EffectTag 标记
@@ -2033,7 +2054,7 @@ export function reconcileChildren(
   current: Fiber | null,
   workInProgress: Fiber,
   nextChildren: any,
-  renderLanes: Lanes,
+  renderLanes: Lanes
 ) {
   if (current === null) {
     // If this is a fresh new component that hasn't been rendered yet, we
@@ -2045,7 +2066,7 @@ export function reconcileChildren(
       workInProgress,
       null,
       nextChildren,
-      renderLanes,
+      renderLanes
     );
   } else {
     // If the current child is the same as the work in progress, it means that
@@ -2059,457 +2080,454 @@ export function reconcileChildren(
       workInProgress,
       current.child,
       nextChildren,
-      renderLanes,
+      renderLanes
     );
   }
 }
-
-```
-第一次创建的时候走的mountChildFibers，主要执行reconcileSingleElement。
-
-```javascript
-  function reconcileSingleElement(
-    returnFiber: Fiber,
-    currentFirstChild: Fiber | null,
-    element: ReactElement,
-    lanes: Lanes,
-  ): Fiber {
-    const key = element.key;
-    let child = currentFirstChild;
-    // 深度优先遍历
-    while (child !== null) {
-      // TODO: If key === null and child.key === null, then this only applies to
-      // the first item in the list.
-      // 比较key是否一样
-      if (child.key === key) {
-        switch (child.tag) {
-          case Fragment: {
-            if (element.type === REACT_FRAGMENT_TYPE) {
-              deleteRemainingChildren(returnFiber, child.sibling);
-              const existing = useFiber(child, element.props.children);
-              existing.return = returnFiber;
-              if (__DEV__) {
-                existing._debugSource = element._source;
-                existing._debugOwner = element._owner;
-              }
-              return existing;
-            }
-            break;
-          }
-          case Block:
-            if (enableBlocksAPI) {
-              let type = element.type;
-              if (type.$$typeof === REACT_LAZY_TYPE) {
-                type = resolveLazyType(type);
-              }
-              if (type.$$typeof === REACT_BLOCK_TYPE) {
-                // The new Block might not be initialized yet. We need to initialize
-                // it in case initializing it turns out it would match.
-                if (
-                  ((type: any): BlockComponent<any, any>)._render ===
-                  (child.type: BlockComponent<any, any>)._render
-                ) {
-                  deleteRemainingChildren(returnFiber, child.sibling);
-                  const existing = useFiber(child, element.props);
-                  existing.type = type;
-                  existing.return = returnFiber;
-                  if (__DEV__) {
-                    existing._debugSource = element._source;
-                    existing._debugOwner = element._owner;
-                  }
-                  return existing;
-                }
-              }
-            }
-          // We intentionally fallthrough here if enableBlocksAPI is not on.
-          // eslint-disable-next-lined no-fallthrough
-          default: {
-            if (
-              child.elementType === element.type ||
-              // Keep this check inline so it only runs on the false path:
-              (__DEV__
-                ? isCompatibleFamilyForHotReloading(child, element)
-                : false)
-            ) {
-              deleteRemainingChildren(returnFiber, child.sibling);
-              const existing = useFiber(child, element.props);
-              existing.ref = coerceRef(returnFiber, child, element);
-              existing.return = returnFiber;
-              if (__DEV__) {
-                existing._debugSource = element._source;
-                existing._debugOwner = element._owner;
-              }
-              return existing;
-            }
-            break;
-          }
-        }
-        // Didn't match.
-        deleteRemainingChildren(returnFiber, child);
-        break;
-      } else {
-        // key不一样则删除
-        deleteChild(returnFiber, child);
-      }
-      child = child.sibling;
-    }
-
-    if (element.type === REACT_FRAGMENT_TYPE) {
-      const created = createFiberFromFragment(
-        element.props.children,
-        returnFiber.mode,
-        lanes,
-        element.key,
-      );
-      created.return = returnFiber;
-      return created;
-    } else {
-      // 初次创建Fiber，和父节点连接在一起
-      const created = createFiberFromElement(element, returnFiber.mode, lanes);
-      created.ref = coerceRef(returnFiber, currentFirstChild, element);
-      created.return = returnFiber;
-      return created;
-    }
-  }
 ```
 
-非初次创建Fiber Tree，走DOM DIFF的流程reconcileChildFibers
+第一次创建的时候走的 mountChildFibers，主要执行 reconcileSingleElement。
 
 ```javascript
-  // 创建Fiber/打上了 EffectTag 的标记
-  function reconcileChildFibers(
-    returnFiber: Fiber,
-    currentFirstChild: Fiber | null,
-    newChild: any,
-    lanes: Lanes,
-  ): Fiber | null {
-    // This function is not recursive.
-    // If the top level item is an array, we treat it as a set of children,
-    // not as a fragment. Nested arrays on the other hand will be treated as
-    // fragment nodes. Recursion happens at the normal flow.
-
-    // Handle top level unkeyed fragments as if they were arrays.
-    // This leads to an ambiguity between <>{[...]}</> and <>...</>.
-    // We treat the ambiguous cases above the same.
-    const isUnkeyedTopLevelFragment =
-      typeof newChild === 'object' &&
-      newChild !== null &&
-      newChild.type === REACT_FRAGMENT_TYPE &&
-      newChild.key === null;
-    if (isUnkeyedTopLevelFragment) {
-      newChild = newChild.props.children;
-    }
-
-    // Handle object types
-    const isObject = typeof newChild === 'object' && newChild !== null;
-
-    // 处理不同的child类型
-    if (isObject) {
-      switch (newChild.$$typeof) {
-        case REACT_ELEMENT_TYPE:
-          return placeSingleChild(
-            reconcileSingleElement(
-              returnFiber,
-              currentFirstChild,
-              newChild,
-              lanes,
-            ),
-          );
-        case REACT_PORTAL_TYPE:
-          return placeSingleChild(
-            reconcileSinglePortal(
-              returnFiber,
-              currentFirstChild,
-              newChild,
-              lanes,
-            ),
-          );
-        case REACT_LAZY_TYPE:
-          if (enableLazyElements) {
-            const payload = newChild._payload;
-            const init = newChild._init;
-            // TODO: This function is supposed to be non-recursive.
-            return reconcileChildFibers(
-              returnFiber,
-              currentFirstChild,
-              init(payload),
-              lanes,
-            );
-          }
-      }
-    }
-
-    if (typeof newChild === 'string' || typeof newChild === 'number') {
-      return placeSingleChild(
-        reconcileSingleTextNode(
-          returnFiber,
-          currentFirstChild,
-          '' + newChild,
-          lanes,
-        ),
-      );
-    }
-
-    if (isArray(newChild)) {
-      return reconcileChildrenArray(
-        returnFiber,
-        currentFirstChild,
-        newChild,
-        lanes,
-      );
-    }
-
-    if (getIteratorFn(newChild)) {
-      return reconcileChildrenIterator(
-        returnFiber,
-        currentFirstChild,
-        newChild,
-        lanes,
-      );
-    }
-
-    if (isObject) {
-      throwOnInvalidObjectType(returnFiber, newChild);
-    }
-
-    if (__DEV__) {
-      if (typeof newChild === 'function') {
-        warnOnFunctionType(returnFiber);
-      }
-    }
-    if (typeof newChild === 'undefined' && !isUnkeyedTopLevelFragment) {
-      // If the new child is undefined, and the return fiber is a composite
-      // component, throw an error. If Fiber return types are disabled,
-      // we already threw above.
-      switch (returnFiber.tag) {
-        case ClassComponent: {
-          if (__DEV__) {
-            const instance = returnFiber.stateNode;
-            if (instance.render._isMockFunction) {
-              // We allow auto-mocks to proceed as if they're returning null.
-              break;
+function reconcileSingleElement(
+  returnFiber: Fiber,
+  currentFirstChild: Fiber | null,
+  element: ReactElement,
+  lanes: Lanes
+): Fiber {
+  const key = element.key;
+  let child = currentFirstChild;
+  // 深度优先遍历
+  while (child !== null) {
+    // TODO: If key === null and child.key === null, then this only applies to
+    // the first item in the list.
+    // 比较key是否一样
+    if (child.key === key) {
+      switch (child.tag) {
+        case Fragment: {
+          if (element.type === REACT_FRAGMENT_TYPE) {
+            deleteRemainingChildren(returnFiber, child.sibling);
+            const existing = useFiber(child, element.props.children);
+            existing.return = returnFiber;
+            if (__DEV__) {
+              existing._debugSource = element._source;
+              existing._debugOwner = element._owner;
             }
+            return existing;
           }
+          break;
         }
-        // Intentionally fall through to the next case, which handles both
-        // functions and classes
-        // eslint-disable-next-lined no-fallthrough
         case Block:
-        case FunctionComponent:
-        case ForwardRef:
-        case SimpleMemoComponent: {
-          invariant(
-            false,
-            '%s(...): Nothing was returned from render. This usually means a ' +
-              'return statement is missing. Or, to render nothing, ' +
-              'return null.',
-            getComponentName(returnFiber.type) || 'Component',
+          if (enableBlocksAPI) {
+            let type = element.type;
+            if (type.$$typeof === REACT_LAZY_TYPE) {
+              type = resolveLazyType(type);
+            }
+            if (type.$$typeof === REACT_BLOCK_TYPE) {
+              // The new Block might not be initialized yet. We need to initialize
+              // it in case initializing it turns out it would match.
+              if (
+                ((type: any): BlockComponent<any, any>)._render ===
+                (child.type: BlockComponent<any, any>)._render
+              ) {
+                deleteRemainingChildren(returnFiber, child.sibling);
+                const existing = useFiber(child, element.props);
+                existing.type = type;
+                existing.return = returnFiber;
+                if (__DEV__) {
+                  existing._debugSource = element._source;
+                  existing._debugOwner = element._owner;
+                }
+                return existing;
+              }
+            }
+          }
+        // We intentionally fallthrough here if enableBlocksAPI is not on.
+        // eslint-disable-next-lined no-fallthrough
+        default: {
+          if (
+            child.elementType === element.type ||
+            // Keep this check inline so it only runs on the false path:
+            (__DEV__
+              ? isCompatibleFamilyForHotReloading(child, element)
+              : false)
+          ) {
+            deleteRemainingChildren(returnFiber, child.sibling);
+            const existing = useFiber(child, element.props);
+            existing.ref = coerceRef(returnFiber, child, element);
+            existing.return = returnFiber;
+            if (__DEV__) {
+              existing._debugSource = element._source;
+              existing._debugOwner = element._owner;
+            }
+            return existing;
+          }
+          break;
+        }
+      }
+      // Didn't match.
+      deleteRemainingChildren(returnFiber, child);
+      break;
+    } else {
+      // key不一样则删除
+      deleteChild(returnFiber, child);
+    }
+    child = child.sibling;
+  }
+
+  if (element.type === REACT_FRAGMENT_TYPE) {
+    const created = createFiberFromFragment(
+      element.props.children,
+      returnFiber.mode,
+      lanes,
+      element.key
+    );
+    created.return = returnFiber;
+    return created;
+  } else {
+    // 初次创建Fiber，和父节点连接在一起
+    const created = createFiberFromElement(element, returnFiber.mode, lanes);
+    created.ref = coerceRef(returnFiber, currentFirstChild, element);
+    created.return = returnFiber;
+    return created;
+  }
+}
+```
+
+非初次创建 Fiber Tree，走 DOM DIFF 的流程 reconcileChildFibers
+
+```javascript
+// 创建Fiber/打上了 EffectTag 的标记
+function reconcileChildFibers(
+  returnFiber: Fiber,
+  currentFirstChild: Fiber | null,
+  newChild: any,
+  lanes: Lanes
+): Fiber | null {
+  // This function is not recursive.
+  // If the top level item is an array, we treat it as a set of children,
+  // not as a fragment. Nested arrays on the other hand will be treated as
+  // fragment nodes. Recursion happens at the normal flow.
+
+  // Handle top level unkeyed fragments as if they were arrays.
+  // This leads to an ambiguity between <>{[...]}</> and <>...</>.
+  // We treat the ambiguous cases above the same.
+  const isUnkeyedTopLevelFragment =
+    typeof newChild === "object" &&
+    newChild !== null &&
+    newChild.type === REACT_FRAGMENT_TYPE &&
+    newChild.key === null;
+  if (isUnkeyedTopLevelFragment) {
+    newChild = newChild.props.children;
+  }
+
+  // Handle object types
+  const isObject = typeof newChild === "object" && newChild !== null;
+
+  // 处理不同的child类型
+  if (isObject) {
+    switch (newChild.$$typeof) {
+      case REACT_ELEMENT_TYPE:
+        return placeSingleChild(
+          reconcileSingleElement(
+            returnFiber,
+            currentFirstChild,
+            newChild,
+            lanes
+          )
+        );
+      case REACT_PORTAL_TYPE:
+        return placeSingleChild(
+          reconcileSinglePortal(returnFiber, currentFirstChild, newChild, lanes)
+        );
+      case REACT_LAZY_TYPE:
+        if (enableLazyElements) {
+          const payload = newChild._payload;
+          const init = newChild._init;
+          // TODO: This function is supposed to be non-recursive.
+          return reconcileChildFibers(
+            returnFiber,
+            currentFirstChild,
+            init(payload),
+            lanes
           );
         }
-      }
     }
-
-    // Remaining cases are all treated as empty.
-    // 删除剩下的children 剩下的都是没有用的
-    return deleteRemainingChildren(returnFiber, currentFirstChild);
   }
-```
-主要看一个子节点是数组的情况
-```javascript
-  function reconcileChildrenArray(
-    returnFiber: Fiber,
-    currentFirstChild: Fiber | null,
-    newChildren: Array<*>,
-    lanes: Lanes,
-  ): Fiber | null {
-    // This algorithm can't optimize by searching from both ends since we
-    // don't have backpointers on fibers. I'm trying to see how far we can get
-    // with that model. If it ends up not being worth the tradeoffs, we can
-    // add it later.
 
-    // Even with a two ended optimization, we'd want to optimize for the case
-    // where there are few changes and brute force the comparison instead of
-    // going for the Map. It'd like to explore hitting that path first in
-    // forward-only mode and only go for the Map once we notice that we need
-    // lots of look ahead. This doesn't handle reversal as well as two ended
-    // search but that's unusual. Besides, for the two ended optimization to
-    // work on Iterables, we'd need to copy the whole set.
+  if (typeof newChild === "string" || typeof newChild === "number") {
+    return placeSingleChild(
+      reconcileSingleTextNode(
+        returnFiber,
+        currentFirstChild,
+        "" + newChild,
+        lanes
+      )
+    );
+  }
 
-    // In this first iteration, we'll just live with hitting the bad case
-    // (adding everything to a Map) in for every insert/move.
+  if (isArray(newChild)) {
+    return reconcileChildrenArray(
+      returnFiber,
+      currentFirstChild,
+      newChild,
+      lanes
+    );
+  }
 
-    // If you change this code, also update reconcileChildrenIterator() which
-    // uses the same algorithm.
+  if (getIteratorFn(newChild)) {
+    return reconcileChildrenIterator(
+      returnFiber,
+      currentFirstChild,
+      newChild,
+      lanes
+    );
+  }
 
-    // 这个算法不能通过两端搜索来优化，因为在 fibers 里没有返回指针
-    // 我想看看这个那个模型可以走多远，如果它最终不值得权衡，我们稍后在添加
-    // 即使采用双端优化，我们也希望针对这种情况进行优化
-    // 在没有变化的情况下，强制进行比较而不是
-    // 去找 Map 它想先探索一下这条路
-    // 仅向前模式，只有在我们发现需要时才会转到 Map
-    // 很多展望未来 这不会处理逆转以及两个结束
-    // 搜索，但那是不寻常的。 此外，对于两端优化来说
-    // 对Iterables工作，我们需要复制整个集合。
-    //在第一次迭代中，我们只会遇到不好的情况
-    //（将所有内容添加到Map中）进行每次插入/移动。
-    //如果更改此代码，还要更新reconcileChildrenIterator（）
-    //使用相同的算法。
+  if (isObject) {
+    throwOnInvalidObjectType(returnFiber, newChild);
+  }
 
-    // 1. 处理条件渲染导致fiber index不一致的问题
-    // 2. newFiber 为 null，就表示没有找到复用的节点，然后就跳出循环
-    // 3. 遍历了所有的新子节点，剩下的都删除。新节点遍历完了，old节点可能还有。
-    // 4. 如果老的节点已经被复用完了，对剩下的新节点进行操作，批量插入老节点末端
-    // 5. 对比了key值的。newFiber不为null ，代表可以复用这个节点，直接复用这个节点
-
-
-    if (__DEV__) {
-      // First, validate keys.
-      let knownKeys = null;
-      for (let i = 0; i < newChildren.length; i++) {
-        const child = newChildren[i];
-        knownKeys = warnOnInvalidKey(child, knownKeys, returnFiber);
+  if (__DEV__) {
+    if (typeof newChild === "function") {
+      warnOnFunctionType(returnFiber);
+    }
+  }
+  if (typeof newChild === "undefined" && !isUnkeyedTopLevelFragment) {
+    // If the new child is undefined, and the return fiber is a composite
+    // component, throw an error. If Fiber return types are disabled,
+    // we already threw above.
+    switch (returnFiber.tag) {
+      case ClassComponent: {
+        if (__DEV__) {
+          const instance = returnFiber.stateNode;
+          if (instance.render._isMockFunction) {
+            // We allow auto-mocks to proceed as if they're returning null.
+            break;
+          }
+        }
+      }
+      // Intentionally fall through to the next case, which handles both
+      // functions and classes
+      // eslint-disable-next-lined no-fallthrough
+      case Block:
+      case FunctionComponent:
+      case ForwardRef:
+      case SimpleMemoComponent: {
+        invariant(
+          false,
+          "%s(...): Nothing was returned from render. This usually means a " +
+            "return statement is missing. Or, to render nothing, " +
+            "return null.",
+          getComponentName(returnFiber.type) || "Component"
+        );
       }
     }
+  }
 
-    let resultingFirstChild: Fiber | null = null;
-    //遍历children 数组时保存前一个 Fiber
-    let previousNewFiber: Fiber | null = null;
+  // Remaining cases are all treated as empty.
+  // 删除剩下的children 剩下的都是没有用的
+  return deleteRemainingChildren(returnFiber, currentFirstChild);
+}
+```
 
-    // currentFirstChild 只有在更新时才不为空 他是当前 fiber 的 child 属性，也是下一个要调度的 fiber
-    let oldFiber = currentFirstChild;
+主要看一个子节点是数组的情况
 
-    // 上次放置的索引， 更新时placeChild() 根据这个索引值决定新组件的插入位置
-    let lastPlacedIndex = 0;
-    let newIdx = 0;
-    let nextOldFiber = null;
-    for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
-      if (oldFiber.index > newIdx) {
-        // 为什么会有 oldFiber.index 大于 newIdx 呢？
-        // 1. 处理条件渲染导致fiber index不一致的问题
-        // 条件渲染的时候
-        nextOldFiber = oldFiber;
-        oldFiber = null;
-      } else {
-        nextOldFiber = oldFiber.sibling;
+```javascript
+function reconcileChildrenArray(
+  returnFiber: Fiber,
+  currentFirstChild: Fiber | null,
+  newChildren: Array<*>,
+  lanes: Lanes
+): Fiber | null {
+  // This algorithm can't optimize by searching from both ends since we
+  // don't have backpointers on fibers. I'm trying to see how far we can get
+  // with that model. If it ends up not being worth the tradeoffs, we can
+  // add it later.
+
+  // Even with a two ended optimization, we'd want to optimize for the case
+  // where there are few changes and brute force the comparison instead of
+  // going for the Map. It'd like to explore hitting that path first in
+  // forward-only mode and only go for the Map once we notice that we need
+  // lots of look ahead. This doesn't handle reversal as well as two ended
+  // search but that's unusual. Besides, for the two ended optimization to
+  // work on Iterables, we'd need to copy the whole set.
+
+  // In this first iteration, we'll just live with hitting the bad case
+  // (adding everything to a Map) in for every insert/move.
+
+  // If you change this code, also update reconcileChildrenIterator() which
+  // uses the same algorithm.
+
+  // 这个算法不能通过两端搜索来优化，因为在 fibers 里没有返回指针
+  // 我想看看这个那个模型可以走多远，如果它最终不值得权衡，我们稍后在添加
+  // 即使采用双端优化，我们也希望针对这种情况进行优化
+  // 在没有变化的情况下，强制进行比较而不是
+  // 去找 Map 它想先探索一下这条路
+  // 仅向前模式，只有在我们发现需要时才会转到 Map
+  // 很多展望未来 这不会处理逆转以及两个结束
+  // 搜索，但那是不寻常的。 此外，对于两端优化来说
+  // 对Iterables工作，我们需要复制整个集合。
+  //在第一次迭代中，我们只会遇到不好的情况
+  //（将所有内容添加到Map中）进行每次插入/移动。
+  //如果更改此代码，还要更新reconcileChildrenIterator（）
+  //使用相同的算法。
+
+  // 1. 处理条件渲染导致fiber index不一致的问题
+  // 2. newFiber 为 null，就表示没有找到复用的节点，然后就跳出循环
+  // 3. 遍历了所有的新子节点，剩下的都删除。新节点遍历完了，old节点可能还有。
+  // 4. 如果老的节点已经被复用完了，对剩下的新节点进行操作，批量插入老节点末端
+  // 5. 对比了key值的。newFiber不为null ，代表可以复用这个节点，直接复用这个节点
+
+  if (__DEV__) {
+    // First, validate keys.
+    let knownKeys = null;
+    for (let i = 0; i < newChildren.length; i++) {
+      const child = newChildren[i];
+      knownKeys = warnOnInvalidKey(child, knownKeys, returnFiber);
+    }
+  }
+
+  let resultingFirstChild: Fiber | null = null;
+  //遍历children 数组时保存前一个 Fiber
+  let previousNewFiber: Fiber | null = null;
+
+  // currentFirstChild 只有在更新时才不为空 他是当前 fiber 的 child 属性，也是下一个要调度的 fiber
+  let oldFiber = currentFirstChild;
+
+  // 上次放置的索引， 更新时placeChild() 根据这个索引值决定新组件的插入位置
+  let lastPlacedIndex = 0;
+  let newIdx = 0;
+  let nextOldFiber = null;
+  for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
+    if (oldFiber.index > newIdx) {
+      // 为什么会有 oldFiber.index 大于 newIdx 呢？
+      // 1. 处理条件渲染导致fiber index不一致的问题
+      // 条件渲染的时候
+      nextOldFiber = oldFiber;
+      oldFiber = null;
+    } else {
+      nextOldFiber = oldFiber.sibling;
+    }
+    const newFiber = updateSlot(
+      returnFiber,
+      oldFiber,
+      newChildren[newIdx],
+      lanes
+    );
+    // 2. newFiber 为 null，就表示没有找到复用的节点，然后就跳出循环
+    if (newFiber === null) {
+      // TODO: This breaks on empty slots like null children. That's
+      // unfortunate because it triggers the slow path all the time. We need
+      // a better way to communicate whether this was a miss or null,
+      // boolean, undefined, etc.
+      if (oldFiber === null) {
+        oldFiber = nextOldFiber;
       }
-      const newFiber = updateSlot(
-        returnFiber,
-        oldFiber,
-        newChildren[newIdx],
-        lanes,
-      );
-      // 2. newFiber 为 null，就表示没有找到复用的节点，然后就跳出循环
+      break;
+    }
+    if (shouldTrackSideEffects) {
+      if (oldFiber && newFiber.alternate === null) {
+        // We matched the slot, but we didn't reuse the existing fiber, so we
+        // need to delete the existing child.
+        // newFiber.alternate 不存在，代表没有复用节点,所以需要删除老的节点
+        deleteChild(returnFiber, oldFiber);
+      }
+    }
+    lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
+    if (previousNewFiber === null) {
+      // TODO: Move out of the loop. This only happens for the first run.
+      resultingFirstChild = newFiber;
+    } else {
+      // TODO: Defer siblings if we're not at the right index for this slot.
+      // I.e. if we had null values before, then we want to defer this
+      // for each null value. However, we also don't want to call updateSlot
+      // with the previous one.
+      previousNewFiber.sibling = newFiber;
+    }
+    previousNewFiber = newFiber;
+    oldFiber = nextOldFiber;
+  }
+  // 3. 遍历了所有的新子节点，剩下的都删除,新节点遍历完了，old节点可能还有。
+  if (newIdx === newChildren.length) {
+    // We've reached the end of the new children. We can delete the rest.
+    deleteRemainingChildren(returnFiber, oldFiber);
+    return resultingFirstChild;
+  }
+  // 4. 如果老的节点已经被复用完了，对剩下的新节点进行操作，批量插入老节点末端
+  if (oldFiber === null) {
+    // If we don't have any more existing children we can choose a fast path
+    // since the rest will all be insertions.
+    for (; newIdx < newChildren.length; newIdx++) {
+      const newFiber = createChild(returnFiber, newChildren[newIdx], lanes);
       if (newFiber === null) {
-        // TODO: This breaks on empty slots like null children. That's
-        // unfortunate because it triggers the slow path all the time. We need
-        // a better way to communicate whether this was a miss or null,
-        // boolean, undefined, etc.
-        if (oldFiber === null) {
-          oldFiber = nextOldFiber;
-        }
-        break;
-      }
-      if (shouldTrackSideEffects) {
-        if (oldFiber && newFiber.alternate === null) {
-          // We matched the slot, but we didn't reuse the existing fiber, so we
-          // need to delete the existing child.
-          // newFiber.alternate 不存在，代表没有复用节点,所以需要删除老的节点
-          deleteChild(returnFiber, oldFiber);
-        }
+        continue;
       }
       lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
       if (previousNewFiber === null) {
         // TODO: Move out of the loop. This only happens for the first run.
         resultingFirstChild = newFiber;
       } else {
-        // TODO: Defer siblings if we're not at the right index for this slot.
-        // I.e. if we had null values before, then we want to defer this
-        // for each null value. However, we also don't want to call updateSlot
-        // with the previous one.
         previousNewFiber.sibling = newFiber;
       }
       previousNewFiber = newFiber;
-      oldFiber = nextOldFiber;
     }
-    // 3. 遍历了所有的新子节点，剩下的都删除,新节点遍历完了，old节点可能还有。
-    if (newIdx === newChildren.length) {
-      // We've reached the end of the new children. We can delete the rest.
-      deleteRemainingChildren(returnFiber, oldFiber);
-      return resultingFirstChild;
-    }
-    // 4. 如果老的节点已经被复用完了，对剩下的新节点进行操作，批量插入老节点末端
-    if (oldFiber === null) {
-      // If we don't have any more existing children we can choose a fast path
-      // since the rest will all be insertions.
-      for (; newIdx < newChildren.length; newIdx++) {
-        const newFiber = createChild(returnFiber, newChildren[newIdx], lanes);
-        if (newFiber === null) {
-          continue;
-        }
-        lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-        if (previousNewFiber === null) {
-          // TODO: Move out of the loop. This only happens for the first run.
-          resultingFirstChild = newFiber;
-        } else {
-          previousNewFiber.sibling = newFiber;
-        }
-        previousNewFiber = newFiber;
-      }
-      return resultingFirstChild;
-    }
-
-    // Add all children to a key map for quick lookups.
-    const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
-
-    // Keep scanning and use the map to restore deleted items as moves.
-    for (; newIdx < newChildren.length; newIdx++) {
-      // 5. 根据key值，对比
-      const newFiber = updateFromMap(
-        existingChildren,
-        returnFiber,
-        newIdx,
-        newChildren[newIdx],
-        lanes,
-      );
-      // newFiber 不为null ，代表可以复用这个节点
-      if (newFiber !== null) {
-        if (shouldTrackSideEffects) {
-          if (newFiber.alternate !== null) {
-            // The new fiber is a work in progress, but if there exists a
-            // current, that means that we reused the fiber. We need to delete
-            // it from the child list so that we don't add it to the deletion
-            // list.
-            existingChildren.delete(
-              newFiber.key === null ? newIdx : newFiber.key,
-            );
-          }
-        }
-        lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
-        if (previousNewFiber === null) {
-          resultingFirstChild = newFiber;
-        } else {
-          previousNewFiber.sibling = newFiber;
-        }
-        previousNewFiber = newFiber;
-      }
-    }
-
-    if (shouldTrackSideEffects) {
-      // Any existing children that weren't consumed above were deleted. We need
-      // to add them to the deletion list.
-      existingChildren.forEach((child) => deleteChild(returnFiber, child));
-    }
-
     return resultingFirstChild;
   }
+
+  // Add all children to a key map for quick lookups.
+  const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
+
+  // Keep scanning and use the map to restore deleted items as moves.
+  for (; newIdx < newChildren.length; newIdx++) {
+    // 5. 根据key值，对比
+    const newFiber = updateFromMap(
+      existingChildren,
+      returnFiber,
+      newIdx,
+      newChildren[newIdx],
+      lanes
+    );
+    // newFiber 不为null ，代表可以复用这个节点
+    if (newFiber !== null) {
+      if (shouldTrackSideEffects) {
+        if (newFiber.alternate !== null) {
+          // The new fiber is a work in progress, but if there exists a
+          // current, that means that we reused the fiber. We need to delete
+          // it from the child list so that we don't add it to the deletion
+          // list.
+          existingChildren.delete(
+            newFiber.key === null ? newIdx : newFiber.key
+          );
+        }
+      }
+      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
+      if (previousNewFiber === null) {
+        resultingFirstChild = newFiber;
+      } else {
+        previousNewFiber.sibling = newFiber;
+      }
+      previousNewFiber = newFiber;
+    }
+  }
+
+  if (shouldTrackSideEffects) {
+    // Any existing children that weren't consumed above were deleted. We need
+    // to add them to the deletion list.
+    existingChildren.forEach((child) => deleteChild(returnFiber, child));
+  }
+
+  return resultingFirstChild;
+}
 ```
 
 - compoleteUnitOfWork
-  1. 创建DOM对象
-  2. 递归处理子树的DOM对象
-  3. 把创建的DOM对象赋值给workInProgress.stateNode属性
-  4. 设置DOM对象的属性, 绑定事件等
-   16.3.0会处理effectTag，17.0没有了。
+  1. 创建 DOM 对象
+  2. 递归处理子树的 DOM 对象
+  3. 把创建的 DOM 对象赋值给 workInProgress.stateNode 属性
+  4. 设置 DOM 对象的属性, 绑定事件等
+     16.3.0 会处理 effectTag，17.0 没有了。
+
 ```javascript
 // 1. 创建DOM对象
 // 2. 递归处理子树的Dom对象
@@ -2620,32 +2638,33 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
     workInProgressRootExitStatus = RootCompleted;
   }
 }
+```
 
-  ```
+### commit 阶段
 
-  ### commit阶段
-  commit阶段首先走commitRoot,将当前任务优先级设置为最高优先级，不可被打断。
-  ```javascript
-  function commitRoot(root) {
+commit 阶段首先走 commitRoot,将当前任务优先级设置为最高优先级，不可被打断。
+
+```javascript
+function commitRoot(root) {
   const renderPriorityLevel = getCurrentPriorityLevel();
-    // 设置优先级为最高优先级
+  // 设置优先级为最高优先级
   runWithPriority(
     ImmediateSchedulerPriority,
-    commitRootImpl.bind(null, root, renderPriorityLevel),
+    commitRootImpl.bind(null, root, renderPriorityLevel)
   );
   return null;
 }
-  ```
+```
 
-  具体实现在commitRootImpl里
+具体实现在 commitRootImpl 里
 
-  ```javascript
-  /**
+```javascript
+/**
  *  1. 递归调用commitBeforeMutationEffects,此方法会调用getSnapshotBeforeUpdate生命周期
  * 2. 递归调用commitMutationEffects ，渲染到页面上
  * 3. 递归调用recursivelyCommitLayoutEffects ，执行didMount/didUpdate生命周期
- * @param {*} root 
- * @param {*} renderPriorityLevel 
+ * @param {*} root
+ * @param {*} renderPriorityLevel
  */
 function commitRootImpl(root, renderPriorityLevel) {
   do {
@@ -2661,7 +2680,7 @@ function commitRootImpl(root, renderPriorityLevel) {
 
   invariant(
     (executionContext & (RenderContext | CommitContext)) === NoContext,
-    'Should not already be working.',
+    "Should not already be working."
   );
 
   const finishedWork = root.finishedWork;
@@ -2695,8 +2714,8 @@ function commitRootImpl(root, renderPriorityLevel) {
 
   invariant(
     finishedWork !== root.current,
-    'Cannot commit the same tree as before. This error is likely caused by ' +
-      'a bug in React. Please file an issue.',
+    "Cannot commit the same tree as before. This error is likely caused by " +
+      "a bug in React. Please file an issue."
   );
 
   // commitRoot never returns a continuation; it always finishes synchronously.
@@ -2816,7 +2835,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         recursivelyCommitLayoutEffects,
         null,
         finishedWork,
-        root,
+        root
       );
       if (hasCaughtError()) {
         const error = clearCaughtError();
@@ -2902,7 +2921,7 @@ function commitRootImpl(root, renderPriorityLevel) {
           scheduleInteractions(
             root,
             expirationTimes[i],
-            root.memoizedInteractions,
+            root.memoizedInteractions
           );
         }
       }
@@ -2993,4 +3012,4 @@ function commitRootImpl(root, renderPriorityLevel) {
 
   return null;
 }
-  ```
+```
