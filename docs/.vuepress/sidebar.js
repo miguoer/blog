@@ -75,10 +75,12 @@ web_front = [
       "framework/framework-react02",
       "framework/framework-react03",
       "framework/framework-redux",
+      "framework/framework-redux02",
       "framework/framework-vuex",
       "framework/framework-webpack01",
       "framework/framework-webpack02",
       "framework/framework-webpack03",
+      "framework/framework-koa",
     ],
   },
   {
