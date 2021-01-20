@@ -40,4 +40,58 @@ React17 为了解决这个问题，扩展了优先级。
 
 #### Fiber 的结构
 
-首先来看下 Fiber
+首先来看下 Fiber 结构
+
+```javascript
+function FiberNode(
+  tag: WorkTag,
+  pendingProps: mixed,
+  key: null | string,
+  mode: TypeOfMode
+) {
+  // Instance
+  this.tag = tag;
+  // 标志节点唯一性，dom-diff时用到
+  this.key = key;
+  this.elementType = null;
+
+  // 节点类型 FunctionComponent ClassComponent
+  this.type = null;
+
+  // stateNode存储了真实的dom节点信息<div></div>
+  this.stateNode = null;
+
+  // Fiber
+  // 指向父节点
+  this.return = null;
+  // 孩子节点
+  this.child = null;
+  // 兄弟节点
+  this.sibling = null;
+  this.index = 0;
+
+  this.ref = null;
+
+  // 保存本次更新造成的状态改变相关信息
+  this.pendingProps = pendingProps;
+  this.memoizedProps = null;
+  this.updateQueue = null;
+  this.memoizedState = null;
+  this.dependencies = null;
+
+  this.mode = mode;
+
+  // Effects
+  // 标志副作用的类型: 删除、新增、更改
+  this.flags = NoFlags;
+  this.subtreeFlags = NoFlags;
+  this.deletions = null;
+
+  // 优先级
+  this.lanes = NoLanes;
+  this.childLanes = NoLanes;
+
+  // 指向workInProgressFiber
+  this.alternate = null;
+}
+```

@@ -384,14 +384,17 @@ export function scheduleUpdateOnFiber(
   // priority as an argument to that function and this one.
   const priorityLevel = getCurrentPriorityLevel();
 
-  // 同步 立即执行
+  // 同步任务 立即执行
   if (lane === SyncLane) {
     if (
       // Check if we're inside unbatchedUpdates
       // 处于unbatchedUpdates中
+      // ReactDom.render里是走这里的逻辑
       (executionContext & LegacyUnbatchedContext) !== NoContext &&
       // Check if we're not already rendering
       // 不在render阶段和commit阶段
+      // RenderContext表示Reconciler阶段
+      // CommitContext 表示渲染阶段了
       (executionContext & (RenderContext | CommitContext)) === NoContext
     ) {
       // Register pending interactions on the root to avoid losing traced interaction data.
@@ -474,6 +477,7 @@ export function scheduleUpdateOnFiber(
  * @param {*} currentTime
  */
 function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
+  // 检查是否有正在执行的任务
   const existingCallbackNode = root.callbackNode;
 
   // Check if any lanes are being starved by other work. If so, mark them as
@@ -510,12 +514,13 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   if (existingCallbackNode !== null) {
     const existingCallbackPriority = root.callbackPriority;
     if (existingCallbackPriority === newCallbackPriority) {
+      // 由于获取更新是从root开始，往下找这个优先级内的所有update。如果存在连续的setState，就是执行这个逻辑，不会新建一个新的update
       // The priority hasn't changed. We can reuse the existing task. Exit.
       return;
     }
     // The priority changed. Cancel the existing callback. We'll schedule a new
     // one below.
-    // 如果新任务优先级更低 也取消当前任务?
+    // 如果新任务优先级更低 也取消当前任务? 是的 车道里重新执行
     cancelCallback(existingCallbackNode);
   }
 
@@ -550,7 +555,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   }
 
   root.callbackPriority = newCallbackPriority;
-  // callbackNode为unstable_scheduleCallback方法返回的newTask
+  // callbackNode为unstable_scheduleCallback方法返回的newTask 如果一个周期内callbackNode不为空则说明已经有任务在执行
   root.callbackNode = newCallbackNode;
 }
 ```
@@ -634,7 +639,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
       break;
   }
 
-  // 生成过期时间
+  // 生成过期时间, 时间越短，优先级越大
   var expirationTime = startTime + timeout;
 
   // 新建task
@@ -682,6 +687,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     // wait until the next time we yield.
     if (!isHostCallbackScheduled && !isPerformingWork) {
       isHostCallbackScheduled = true;
+      // 这里调度及时任务
       requestHostCallback(flushWork);
     }
   }
