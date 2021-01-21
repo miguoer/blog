@@ -93,7 +93,11 @@ web_front = [
   {
     title: "微前端",
     collapsable: false,
-    children: ["micro-frontend/micro-frontend"],
+    children: [
+      "micro-frontend/micro-frontend",
+      "micro-frontend/micro-frontend-02",
+      "micro-frontend/micro-frontend-03",
+    ],
   },
   {
     title: "CSS",
