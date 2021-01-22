@@ -97,8 +97,8 @@ web_front = [
     collapsable: false,
     children: [
       "micro-frontend/micro-frontend",
+      "micro-frontend/micro-frontend-01",
       "micro-frontend/micro-frontend-02",
-      "micro-frontend/micro-frontend-03",
     ],
   },
   {
