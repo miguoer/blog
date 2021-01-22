@@ -15,7 +15,7 @@ Flux 架构基本概念
 
 ## Redux 介绍
 
-基于 Flux 思想，出现了很多框架，Redux 就是其中之一。Redux 里都是用的函数式编程思想。函数式编程首先是一种范畴，是范畴论的一种应用，函数式编程是范畴论中的一个数学分支。在函数式编程中，没有 if else，只有函子。在写 Redux 时，函数式编程首先得有一个 container 容器，什么样的容器能变成函子呢，有 map 并且接收一个变形关系，作用于每一个 value。因为有很多函子，函数式编程讲究纯，要把所有的脏操作用 IO 函子包裹。Redux 中使用的就是这种机制，包括 store, currentState, action, reducer 和 middlewares。
+基于 Flux 思想，出现了很多框架，Redux 就是其中之一。Redux 里都是用的函数式编程思想。函数式编程首先是一种范畴，是范畴论的一种应用，函数式编程是范畴论中的一个数学分支。在函数式编程中，没有 if else，只有函子。函数式编程首先得有一个 container 容器，什么样的容器能变成函子呢，有 map 并且接收一个变形关系，作用于每一个 value。因为有很多函子，函数式编程讲究纯，要把所有的脏操用 IO 函子包裹。Redux 中使用的就是这种机制，包括 store, currentState, action, reducer 和 middlewares。
 
 store -> container
 

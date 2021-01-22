@@ -56,6 +56,10 @@ If-Modified-Since:再次请求服务器时，通过此字段通知服务器上�
 若资源的最后修改时间大于 If-Modified-Since，说明资源又被改动过，则响应整片资源内容，返回状态码 200；
 若资源的最后修改时间小于或等于 If-Modified-Since，说明资源无新修改，则响应 HTTP 304，告知浏览器继续使用所保存的 cache。
 
+缺点：last-modify 是以时刻作为标识的，无法识别 1 秒内的多次修改。而且有些服务器得不到精确的文件的最后修改时间，如果文件时动态生成的，那么该方法的更新时间永远是生成的时间，起不到缓存的作用。
+
+为了解决上述问题，HTTP1.1 是，提出了 Etag/If-none-match 方案
+
 ### Etag / If-None-Match
 
 这对的优先级高于 Last-Modified / If-Modified-Since

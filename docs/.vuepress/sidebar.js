@@ -87,7 +87,7 @@ web_front = [
       "framework/framework-v8-03",
       "framework/framework-jsstack",
       "framework/framework-jsobject",
-
+      "framework/framework-invensify",
       "framework/framework-vue3",
       "framework/framework-vuex",
     ],
