@@ -73,6 +73,7 @@ web_front = [
       "framework/framework-react02",
       "framework/framework-react03",
       "framework/framework-react04",
+      "framework/framework-react05",
       "framework/framework-redux",
       "framework/framework-redux02",
       "framework/framework-recoil",
@@ -83,6 +84,7 @@ web_front = [
       "framework/framework-koa",
       "framework/framework-v8-01",
       "framework/framework-v8-02",
+      "framework/framework-v8-03",
       "framework/framework-jsstack",
       "framework/framework-jsobject",
 
@@ -136,7 +138,10 @@ web_front = [
   {
     title: "项目架子",
     collapsable: false,
-    children: ["project-framework/project-framework"],
+    children: [
+      "project-framework/project-framework",
+      "project-framework/monitor",
+    ],
   },
 ];
 
