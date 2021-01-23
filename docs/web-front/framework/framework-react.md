@@ -1,22 +1,28 @@
-# React源码一
+# React 源码（一）- createElement
+
 ## React.createElement
-正常在写class组件，render()中返回的组件和函数式组件直接返回的JSX语法的组件，都会转成React.createElement()方法。来看一段经过babel转义之后的代码:
+
+正常在写 class 组件，render()中返回的组件和函数式组件直接返回的 JSX 语法的组件，都会转成 React.createElement()方法。来看一段经过 babel 转义之后的代码:
+
 ```javascript
 <div className="app">
-	<label>hello world</label>
-</div>
+  <label>hello world</label>
+</div>;
 
 //转义之后
-"use strict";
+("use strict");
 
 /*#__PURE__*/
-React.createElement("div", {
-  className: "app"
-}, /*#__PURE__*/React.createElement("label", null, "hello world"));
-
+React.createElement(
+  "div",
+  {
+    className: "app",
+  },
+  /*#__PURE__*/ React.createElement("label", null, "hello world")
+);
 ```
 
-React.createElement的源码如下:
+React.createElement 的源码如下:
 
 ```javascript
 /**
@@ -45,7 +51,7 @@ export function createElement(type, config, children) {
       }
     }
     if (hasValidKey(config)) {
-      key = '' + config.key;
+      key = "" + config.key;
     }
 
     self = config.__self === undefined ? null : config.__self;
@@ -93,8 +99,8 @@ export function createElement(type, config, children) {
   if (__DEV__) {
     if (key || ref) {
       const displayName =
-        typeof type === 'function'
-          ? type.displayName || type.name || 'Unknown'
+        typeof type === "function"
+          ? type.displayName || type.name || "Unknown"
           : type;
       if (key) {
         defineKeyPropWarningGetter(props, displayName);
@@ -112,17 +118,17 @@ export function createElement(type, config, children) {
     self,
     source,
     ReactCurrentOwner.current,
-    props,
+    props
   );
 }
-
 ```
-总结一下，React.createElement主要做了两件事: 1. 处理所有的props，包括处理所有的children 2. 生成一个ReactElement。
 
-接下来看下ReactElement是什么。
+总结一下，React.createElement 主要做了两件事: 1. 处理所有的 props，包括处理所有的 children 2. 生成一个 ReactElement。
+
+接下来看下 ReactElement 是什么。
 
 ```javascript
-const ReactElement = function (type, key, ref, self, source, owner, props) {
+const ReactElement = function(type, key, ref, self, source, owner, props) {
   // ReactElement内部就是一个Object
   const element = {
     // This tag allows us to uniquely identify this as a React Element
@@ -151,14 +157,14 @@ const ReactElement = function (type, key, ref, self, source, owner, props) {
     // the validation flag non-enumerable (where possible, which should
     // include every environment we run tests in), so the test framework
     // ignores it.
-    Object.defineProperty(element._store, 'validated', {
+    Object.defineProperty(element._store, "validated", {
       configurable: false,
       enumerable: false,
       writable: true,
       value: false,
     });
     // self and source are DEV only properties.
-    Object.defineProperty(element, '_self', {
+    Object.defineProperty(element, "_self", {
       configurable: false,
       enumerable: false,
       writable: false,
@@ -166,7 +172,7 @@ const ReactElement = function (type, key, ref, self, source, owner, props) {
     });
     // Two elements created in two different places should be considered
     // equal for testing purposes and therefore we hide it from enumeration.
-    Object.defineProperty(element, '_source', {
+    Object.defineProperty(element, "_source", {
       configurable: false,
       enumerable: false,
       writable: false,
@@ -181,9 +187,11 @@ const ReactElement = function (type, key, ref, self, source, owner, props) {
   return element;
 };
 ```
-ReactElemnt就是一个大的 Object ，除了传入的属性之外，还会添加两个属性，一个是 `$$typeof: REACT_ELEMENT_TYPE` 一个是`_owner`。
+
+ReactElemnt 就是一个大的 Object ，除了传入的属性之外，还会添加两个属性，一个是 `$$typeof: REACT_ELEMENT_TYPE` 一个是`_owner`。
 
 ## React.Children
+
 ```javascript
 /**
  * Maps children that are typically specified as `props.children`.
@@ -208,22 +216,21 @@ ReactElemnt就是一个大的 Object ，除了传入的属性之外，还会添�
 function mapChildren(
   children: ?ReactNodeList,
   func: MapFunc,
-  context: mixed,
+  context: mixed
 ): ?Array<React$Node> {
   if (children == null) {
     return children;
   }
   const result = [];
   let count = 0;
-  mapIntoArray(children, result, '', '', function(child) {
+  mapIntoArray(children, result, "", "", function(child) {
     return func.call(context, child, count++);
   });
   return result;
 }
 ```
-mapChildren通过递归调用mapIntoArray，根据children的结构，将func map到result数组里面，然后返回这个数组。
 
-
+mapChildren 通过递归调用 mapIntoArray，根据 children 的结构，将 func map 到 result 数组里面，然后返回这个数组。
 
 ```javascript
 function mapIntoArray(
@@ -231,11 +238,11 @@ function mapIntoArray(
   array: Array<React$Node>,
   escapedPrefix: string,
   nameSoFar: string,
-  callback: (?React$Node) => ?ReactNodeList,
+  callback: (?React$Node) => ?ReactNodeList
 ): number {
   const type = typeof children;
 
-  if (type === 'undefined' || type === 'boolean') {
+  if (type === "undefined" || type === "boolean") {
     // All of the above are perceived as null.
     children = null;
   }
@@ -247,11 +254,11 @@ function mapIntoArray(
     invokeCallback = true;
   } else {
     switch (type) {
-      case 'string':
-      case 'number':
+      case "string":
+      case "number":
         invokeCallback = true;
         break;
-      case 'object':
+      case "object":
         switch ((children: any).$$typeof) {
           case REACT_ELEMENT_TYPE:
           case REACT_PORTAL_TYPE:
@@ -267,14 +274,14 @@ function mapIntoArray(
     // If it's the only child, treat the name as if it was wrapped in an array
     // so that it's consistent if the number of children grows:
     const childKey =
-      nameSoFar === '' ? SEPARATOR + getElementKey(child, 0) : nameSoFar;
+      nameSoFar === "" ? SEPARATOR + getElementKey(child, 0) : nameSoFar;
     if (Array.isArray(mappedChild)) {
       //如果唯一的子元素，其子元素也是数组，递归展平
-      let escapedChildKey = '';
+      let escapedChildKey = "";
       if (childKey != null) {
-        escapedChildKey = escapeUserProvidedKey(childKey) + '/';
+        escapedChildKey = escapeUserProvidedKey(childKey) + "/";
       }
-      mapIntoArray(mappedChild, array, escapedChildKey, '', c => c);
+      mapIntoArray(mappedChild, array, escapedChildKey, "", (c) => c);
     } else if (mappedChild != null) {
       if (isValidElement(mappedChild)) {
         mappedChild = cloneAndReplaceKey(
@@ -285,12 +292,12 @@ function mapIntoArray(
             // $FlowFixMe Flow incorrectly thinks React.Portal doesn't have a key
             (mappedChild.key && (!child || child.key !== mappedChild.key)
               ? // $FlowFixMe Flow incorrectly thinks existing element's key can be a number
-                escapeUserProvidedKey('' + mappedChild.key) + '/'
-              : '') +
-            childKey,
+                escapeUserProvidedKey("" + mappedChild.key) + "/"
+              : "") +
+            childKey
         );
       }
-    //如果唯一的子元素，其子元素不是数组，直接放进array
+      //如果唯一的子元素，其子元素不是数组，直接放进array
       array.push(mappedChild);
     }
     return 1;
@@ -300,9 +307,8 @@ function mapIntoArray(
   let nextName;
   let subtreeCount = 0; // Count of children found in the current subtree.
   const nextNamePrefix =
-    nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
+    nameSoFar === "" ? SEPARATOR : nameSoFar + SUBSEPARATOR;
 
-  
   if (Array.isArray(children)) {
     //如果是数组，递归每一个子元素
     for (let i = 0; i < children.length; i++) {
@@ -313,12 +319,12 @@ function mapIntoArray(
         array,
         escapedPrefix,
         nextName,
-        callback,
+        callback
       );
     }
   } else {
     const iteratorFn = getIteratorFn(children);
-    if (typeof iteratorFn === 'function') {
+    if (typeof iteratorFn === "function") {
       const iterableChildren: Iterable<React$Node> & {
         entries: any,
       } = (children: any);
@@ -328,8 +334,8 @@ function mapIntoArray(
         if (iteratorFn === iterableChildren.entries) {
           if (!didWarnAboutMaps) {
             console.warn(
-              'Using Maps as children is not supported. ' +
-                'Use an array of keyed ReactElements instead.',
+              "Using Maps as children is not supported. " +
+                "Use an array of keyed ReactElements instead."
             );
           }
           didWarnAboutMaps = true;
@@ -347,27 +353,23 @@ function mapIntoArray(
           array,
           escapedPrefix,
           nextName,
-          callback,
+          callback
         );
       }
-    } else if (type === 'object') {
-      const childrenString = '' + (children: any);
+    } else if (type === "object") {
+      const childrenString = "" + (children: any);
       invariant(
         false,
-        'Objects are not valid as a React child (found: %s). ' +
-          'If you meant to render a collection of children, use an array ' +
-          'instead.',
-        childrenString === '[object Object]'
-          ? 'object with keys {' + Object.keys((children: any)).join(', ') + '}'
-          : childrenString,
+        "Objects are not valid as a React child (found: %s). " +
+          "If you meant to render a collection of children, use an array " +
+          "instead.",
+        childrenString === "[object Object]"
+          ? "object with keys {" + Object.keys((children: any)).join(", ") + "}"
+          : childrenString
       );
     }
   }
 
   return subtreeCount;
 }
-
 ```
-
-
-

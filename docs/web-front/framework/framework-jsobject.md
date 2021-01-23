@@ -1,6 +1,6 @@
 # Javascript 对象和 Map 实现原理
 
-JavaScript 中集中常⻅的数据类型数组、对象、Map 和 Set，他们之间到底⼜有什么区别和联系呢，我们继续分析。⽼规矩还是先把⼀些所谓⾼⼤上的概念列出来：
+JavaScript 中几种常⻅的数据类型数组、对象、Map 和 Set，他们之间到底⼜有什么区别和联系呢，我们继续分析。⽼规矩还是先把⼀些所谓⾼⼤上的概念列出来：
 
 - 常规属性 (properties) 和排序属性 (elements)
 - 对象内属性 (in-object properties)
@@ -14,7 +14,7 @@ JavaScript 中集中常⻅的数据类型数组、对象、Map 和 Set，他们�
 
 elements 里面存储的是所有 key 为 number 的属性的值，它其实是个变相的数组。它是实时动态调整的。经最新的测试，所有 key 为 number 的属性不管是动态创建的，还是初始化赋值的，都会存储到 elements 数组中，且一直保持顺序。
 
-快速性和慢属性。快速性是说，当一个对象在创建的初期，里面有些数据会直接放到 in-object properties。但是如果动态的往里面加属性，那么有些属性会动态的放到外部的 properties 中。
+快属性和慢属性。快属性是说，当一个对象在创建的初期，里面有些数据会直接放到 in-object properties。但是如果动态的往里面加属性，那么有些属性会动态的放到外部的 properties 中。
 
 快数组和慢速组。意思是有些情况数组是快数组，查找很快，有些情况查找很慢，是慢数组。
 
@@ -154,7 +154,7 @@ JavaScript 的数组过于灵活。 1.数组为什么可以保存不同类型？
 
 ### 数组为什么可以保存不同类型？
 
-    JSArray 是继承⾃ JSObject 的，所以在 JavaScript 中，数组可以是⼀个特殊的对象，内部也是以 key-value 形式存储数据，所以 JavaScript 中的数组可以存放不同类型的值。
+JSArray 是继承⾃ JSObject 的，所以在 JavaScript 中，数组可以是⼀个特殊的对象，内部也是以 key-value 形式存储数据，所以 JavaScript 中的数组可以存放不同类型的值。
 
 ```javascript
 //JSArray 是继承⾃ JSObject 的，所以在 JavaScript 中，数组可以是⼀个特殊的对象，内部也是以key-value 形式存储数据，所以 JavaScript 中的数组可以存放不同类型的值。
@@ -202,7 +202,7 @@ inline Object ValueAt(const Isolate* isolate, InternalIndex entry);
 ```
 
 3. 什么时候从快数组变慢数组？
-   初始是 1024。快数组新容量是扩容后的容量 3 倍之多时，也会被转成慢数组
+   初始是 1024。快数组新容量是扩容前的容量 3 倍之多时，也会被转成慢数组
 
 ```javascript
 // src/objects/js-objects.h
@@ -250,7 +250,7 @@ return ShouldConvertToSlowElements(object.GetFastElementsUsage(),
 所以，当处于以下情况时，快数组会被转变为慢数组：
 
 - 当加⼊的索引值 index ⽐当前容量 capacity 差值⼤于等于 1024 时（index - capacity >= 1024）
-- 快数组新容量是扩容后的容量 3 倍之多时
+- 快数组新容量是扩容前的容量 3 倍之多时
   例如：向快数组⾥增加⼀个⼤索引同类型值
 
 ```javascript

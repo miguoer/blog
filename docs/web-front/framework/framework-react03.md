@@ -1,10 +1,13 @@
-# React源码分析三-hooks
-在没有Hooks之前，函数式组件不支持state,也没有生命周期，所有的属性只能通过Props传递。Hooks可以让我们在函数式组件里面使用state且支持生命周期。写函数式组件可以比类组件减少约40%左右的代码量。
+# React 源码（三）- hooks
 
-常用的Hooks有 useState, useEffect, useRef, useCallback, useMemo等。useEffect相当于componentDidMount+componentDidupdate+componentWillUnmount三个生命周期的集合。useEffect第二个参数传[]，相当于componentDidMount, 传[data] 相当于componentDidupdate, return函数相当于componentWillUnmount。
+在没有 Hooks 之前，函数式组件不支持 state,也没有生命周期，所有的属性只能通过 Props 传递。Hooks 可以让我们在函数式组件里面使用 state 且支持生命周期。写函数式组件可以比类组件减少约 40%左右的代码量。
+
+常用的 Hooks 有 useState, useEffect, useRef, useCallback, useMemo 等。useEffect 相当于 componentDidMount+componentDidupdate+componentWillUnmount 三个生命周期的集合。useEffect 第二个参数传[]，相当于 componentDidMount, 传[data] 相当于 componentDidupdate, return 函数相当于 componentWillUnmount。
 
 ## useState
-useState有3个阶段，mountState, dispatchAction和updateState
+
+useState 有 3 个阶段，mountState, dispatchAction 和 updateState
+
 ```javascript
     useState<S>(
       initialState: (() => S) | S,
@@ -21,17 +24,18 @@ useState有3个阶段，mountState, dispatchAction和updateState
     },
 
 ```
-初始化执行useState时注意执行了mountState
+
+初始化执行 useState 时注意执行了 mountState
 
 ```javascript
 // 第一次执行函数体的时候
 function mountState<S>(
-  initialState: (() => S) | S,
+  initialState: (() => S) | S
 ): [S, Dispatch<BasicStateAction<S>>] {
   const hook = mountWorkInProgressHook();
 
   // 1. 默认值是function，执行function，得到初始state
-  if (typeof initialState === 'function') {
+  if (typeof initialState === "function") {
     // $FlowFixMe: Flow doesn't like mixed types
     initialState = initialState();
   }
@@ -47,18 +51,18 @@ function mountState<S>(
 
   // 4. 把queue传递给dispatch
   const dispatch: Dispatch<
-    BasicStateAction<S>,
+    BasicStateAction<S>
   > = (queue.dispatch = (dispatchAction.bind(
     null,
     currentlyRenderingFiber,
-    queue,
+    queue
   ): any));
   // 5. 返回默认值和dispatch
   return [hook.memoizedState, dispatch];
 }
 ```
 
-useState返回了两个值，一个是默认值，一个是dispatch。调用dispatch方法时，会走dispatchAction流程。
+useState 返回了两个值，一个是默认值，一个是 dispatch。调用 dispatch 方法时，会走 dispatchAction 流程。
 
 ```javascript
 // 每调用一次 setCount(2);setCount((count) => count++)
@@ -70,14 +74,14 @@ useState返回了两个值，一个是默认值，一个是dispatch。调用disp
 function dispatchAction<S, A>(
   fiber: Fiber,
   queue: UpdateQueue<S, A>,
-  action: A,
+  action: A
 ) {
   if (__DEV__) {
-    if (typeof arguments[3] === 'function') {
+    if (typeof arguments[3] === "function") {
       console.error(
         "State updates from the useState() and useReducer() Hooks don't support the " +
-          'second callback argument. To execute a side effect after ' +
-          'rendering, declare it in the component body with useEffect().',
+          "second callback argument. To execute a side effect after " +
+          "rendering, declare it in the component body with useEffect()."
       );
     }
   }
@@ -160,7 +164,7 @@ function dispatchAction<S, A>(
     }
     if (__DEV__) {
       // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-      if (typeof jest !== 'undefined') {
+      if (typeof jest !== "undefined") {
         warnIfNotScopedWithMatchingAct(fiber);
         warnIfNotCurrentlyActingUpdatesInDev(fiber);
       }
@@ -172,7 +176,7 @@ function dispatchAction<S, A>(
   if (__DEV__) {
     if (enableDebugTracing) {
       if (fiber.mode & DebugTracingMode) {
-        const name = getComponentName(fiber.type) || 'Unknown';
+        const name = getComponentName(fiber.type) || "Unknown";
         logStateUpdateScheduled(name, lane, action);
       }
     }
@@ -183,7 +187,8 @@ function dispatchAction<S, A>(
   }
 }
 ```
-最后执行了scheduleUpdateOnFiber，scheduleUpdateOnFiber会执行render函数，函数式组件会重新执行。这时再执行useState时，会走updateState。
+
+最后执行了 scheduleUpdateOnFiber，scheduleUpdateOnFiber 会执行 render 函数，函数式组件会重新执行。这时再执行 useState 时，会走 updateState。
 
 ```javascript
     useState<S>(
@@ -201,32 +206,36 @@ function dispatchAction<S, A>(
       }
     },
 ```
-来看下updateState
+
+来看下 updateState
+
 ```javascript
-// 后面通过state更新， 重新执行function Component 
+// 后面通过state更新， 重新执行function Component
 // 调updateState
 // useState就是一个reducer的语法糖
 function updateState<S>(
-  initialState: (() => S) | S,
+  initialState: (() => S) | S
 ): [S, Dispatch<BasicStateAction<S>>] {
   return updateReducer(basicStateReducer, (initialState: any));
 }
 ```
-updateState直接执行updateReducer
+
+updateState 直接执行 updateReducer
+
 ```javascript
 // 1. 递归执行quene里的update
 // 2. 计算最新的state，赋值给memoizedState
 function updateReducer<S, I, A>(
   reducer: (S, A) => S,
   initialArg: I,
-  init?: (I) => S,
+  init?: (I) => S
 ): [S, Dispatch<A>] {
   const hook = updateWorkInProgressHook();
   // 拿到mount阶段创建的queue
   const queue = hook.queue;
   invariant(
     queue !== null,
-    'Should have a queue. This is likely a bug in React. Please file an issue.',
+    "Should have a queue. This is likely a bug in React. Please file an issue."
   );
 
   queue.lastRenderedReducer = reducer;
@@ -253,8 +262,8 @@ function updateReducer<S, I, A>(
         // Internal invariant that should never happen, but feasibly could in
         // the future if we implement resuming, or some form of that.
         console.error(
-          'Internal error: Expected work-in-progress queue to be a clone. ' +
-            'This is a bug in React.',
+          "Internal error: Expected work-in-progress queue to be a clone. " +
+            "This is a bug in React."
         );
       }
     }
@@ -296,7 +305,7 @@ function updateReducer<S, I, A>(
         // renderLanes from the original lanes.
         currentlyRenderingFiber.lanes = mergeLanes(
           currentlyRenderingFiber.lanes,
-          updateLane,
+          updateLane
         );
         markSkippedUpdateLanes(updateLane);
       } else {
@@ -355,10 +364,12 @@ function updateReducer<S, I, A>(
   return [hook.memoizedState, dispatch];
 }
 ```
-可以看到,我们执行setState之后，并不会立即更新，而是丢到队列里了，执行调度器的时候会重新render，这个时候useState才去取新的值。
+
+可以看到,我们执行 setState 之后，并不会立即更新，而是丢到队列里了，执行调度器的时候会重新 render，这个时候 useState 才去取新的值。
 
 ## useEffect
-useEffect也分为两个阶段，mountEffect和updateEffect。
+
+useEffect 也分为两个阶段，mountEffect 和 updateEffect。
 
 ```javascript
 //create和deps是传递的两个参数
@@ -368,7 +379,7 @@ function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
   const nextDeps = deps === undefined ? null : deps;
   // 设置fiberFlags
   currentlyRenderingFiber.flags |= fiberFlags;
-  
+
   //注意，Push的值不是state,是Effect
   // const effect: Effect = {
   //   tag,
@@ -382,19 +393,20 @@ function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
     HookHasEffect | hookFlags,
     create,
     undefined,
-    nextDeps,
+    nextDeps
   );
 }
 ```
-来看下pushEffect里的实现
+
+来看下 pushEffect 里的实现
 
 ```javascript
 function pushEffect(tag, create, destroy, deps) {
   const effect: Effect = {
     tag,
-    create,//create是useEffect第一个参数 () => {return ***}
-    destroy,// create的返回结果
-    deps,// useEffect第二个参数
+    create, //create是useEffect第一个参数 () => {return ***}
+    destroy, // create的返回结果
+    deps, // useEffect第二个参数
     // Circular
     next: (null: any),
   };
@@ -417,23 +429,24 @@ function pushEffect(tag, create, destroy, deps) {
   }
   return effect;
 }
-
 ```
-总结一下，mountEffect主要做了以下几件事:
-- 1. 设置依赖数组
-- 2. 设置tag
-- 3. 新增一个effect到currentlyRenderingFiber.updateQueue中，参与到completeRoot里去。
-  
-useEffect最开始是相当于didMount和didUpdate，会在上一章分析的commitLayoutEffects里执行。
 
-mountEffect执行时机  在 commitRoot-> recursivelyCommitLayoutEffects-> commitHookEffectListMount里执行mountEffect。
+总结一下，mountEffect 主要做了以下几件事:
+
+- 1. 设置依赖数组
+- 2. 设置 tag
+- 3. 新增一个 effect 到 currentlyRenderingFiber.updateQueue 中，参与到 completeRoot 里去。
+
+useEffect 最开始是相当于 didMount 和 didUpdate，会在上一章分析的 commitLayoutEffects 里执行。
+
+mountEffect 执行时机 在 commitRoot-> recursivelyCommitLayoutEffects-> commitHookEffectListMount 里执行 mountEffect。
 
 ```javascript
 function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber) {
   const updateQueue: FunctionComponentUpdateQueue | null = (finishedWork.updateQueue: any);
   const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null;
   if (lastEffect !== null) {
-    // 有更新队列  
+    // 有更新队列
     const firstEffect = lastEffect.next;
     let effect = firstEffect;
     //遍历所有队列
@@ -450,7 +463,7 @@ function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber) {
 }
 ```
 
-updateEffect阶段比mount阶段多了一个东西，即对比依赖。
+updateEffect 阶段比 mount 阶段多了一个东西，即对比依赖。
 
 ```javascript
 function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
@@ -464,7 +477,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
     destroy = prevEffect.destroy;
     if (nextDeps !== null) {
       const prevDeps = prevEffect.deps;
-       // useEffect的依赖的对比
+      // useEffect的依赖的对比
       // 对比依赖的值有没有变化，有变化的话，重新发起一个Effect
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         pushEffect(hookFlags, create, destroy, nextDeps);
@@ -480,17 +493,18 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
     HookHasEffect | hookFlags,
     create,
     destroy,
-    nextDeps,
+    nextDeps
   );
 }
 ```
 
-那destroy什么时候执行? 答案是在commitUnmount阶段卸载组件的时候，会低啊用destroy方法。具体路径是flushPassiveUnmountEffects->flushPassiveUnmountEffectsInsideOfDeletedTree->commitPassiveUnmount->commitHookEffectListUnmount->safelyCallDestroy
+那 destroy 什么时候执行? 答案是在 commitUnmount 阶段卸载组件的时候，会低啊用 destroy 方法。具体路径是 flushPassiveUnmountEffects->flushPassiveUnmountEffectsInsideOfDeletedTree->commitPassiveUnmount->commitHookEffectListUnmount->safelyCallDestroy
+
 ```javascript
 export function safelyCallDestroy(
   current: Fiber,
   nearestMountedAncestor: Fiber | null,
-  destroy: () => void,
+  destroy: () => void
 ) {
   if (__DEV__) {
     invokeGuardedCallback(null, destroy, null);
@@ -508,117 +522,130 @@ export function safelyCallDestroy(
 }
 ```
 
-## hooks常见的坑
-react新特性--->hooks，用hooks时遇到哪些问题？
-1. 什么是capture value
+## hooks 常见的坑
+
+react 新特性--->hooks，用 hooks 时遇到哪些问题？
+
+1. 什么是 capture value
+
 ```javascript
 function App(props) {
-    const [age, setAge] = useState(20)
+  const [age, setAge] = useState(20);
 
-    return <button onClick={()=> {
+  return (
+    <button
+      onClick={() => {
         setAge(30);
-        setTimeout(()=> {
-            console.log(age);
-
+        setTimeout(() => {
+          console.log(age);
         }, 2000);
-    }}>改变age</button>
+      }}
+    >
+      改变age
+    </button>
+  );
 }
 ```
-上面代码执行的结果是20, 第一次执行了App, setAge之后，又会执行App。由于第一次执行后，setTimeout存在，由于还没执行完，上下文还保留了。这是由JS闭包导致的。
 
-class组件为什么没有这个问题？这是因为class组件里有this。this可以帮助我们找到对应的值。
+上面代码执行的结果是 20, 第一次执行了 App, setAge 之后，又会执行 App。由于第一次执行后，setTimeout 存在，由于还没执行完，上下文还保留了。这是由 JS 闭包导致的。
+
+class 组件为什么没有这个问题？这是因为 class 组件里有 this。this 可以帮助我们找到对应的值。
 
 2. 死循环
+
 ```javascript
-
 function App(props) {
-    // 如果直接把clickFunction传递给子组件，重新执行App，子组件都会重新渲染
-    const clickFunction = (name) => {
-        setName(name);
-    }
+  // 如果直接把clickFunction传递给子组件，重新执行App，子组件都会重新渲染
+  const clickFunction = (name) => {
+    setName(name);
+  };
 
-    // 使用useCallback
-    const changeState = useCallback((name) => {
-        fetch('xxx').then((res) => {
-            setName(res.name)
-        });
-    }, [age])
+  // 使用useCallback
+  const changeState = useCallback(
+    (name) => {
+      fetch("xxx").then((res) => {
+        setName(res.name);
+      });
+    },
+    [age]
+  );
 
-    return <div onClick={changeState}></div>
+  return <div onClick={changeState}></div>;
 }
 ```
 
-死循环例2：
-```javascript
-    function App(props) {
-        const [count, setCount] = useState(0)
-        const addCount = useCallback(() => {
-            setCount(count+1)
-            //解决办法 用function
-            //setCount((c) => c+1)
-            //解决办法二 用ref
-            //ref1.current = count++;
-        }, [count]);
+死循环例 2：
 
-        useEffect(()=> {
-            addCount();
-        }, [addCount]);
-        return <div></div>
-    }
+```javascript
+function App(props) {
+  const [count, setCount] = useState(0);
+  const addCount = useCallback(() => {
+    setCount(count + 1);
+    //解决办法 用function
+    //setCount((c) => c+1)
+    //解决办法二 用ref
+    //ref1.current = count++;
+  }, [count]);
+
+  useEffect(() => {
+    addCount();
+  }, [addCount]);
+  return <div></div>;
+}
 ```
-   
+
 3. 子组件怎么避免无意义渲染
-使用useCallback包括函数传递给子组件。
+   使用 useCallback 包括函数传递给子组件。
 
 ```javascript
-    function App(props) {
-        const [name, setName] = useState("");
-        const [count, setCount] = useState(0)
-        const addCount= useCallback(()=> {
-            setCount(count + 1);
-        }, []);
-        return <div>
-            <Child  name={name} addCount={addCount}/>
-        </div>
+function App(props) {
+  const [name, setName] = useState("");
+  const [count, setCount] = useState(0);
+  const addCount = useCallback(() => {
+    setCount(count + 1);
+  }, []);
+  return (
+    <div>
+      <Child name={name} addCount={addCount} />
+    </div>
+  );
+}
+
+const Child = ({ name, addCount }) => {
+  return <div onClick={addCount}>{name}</div>;
+};
+```
+
+上面的例子即使用了 addCount 加了 useCallback，当 App 更新时，Child 还是会重新渲染。为啥？因为 Child 没有 componentShouldUpdate 方法。React 提供了 memo 函数提供浅比较渲染。
+
+解决办法就是用 memo 包裹子组件，同时函数用 useCallback 包裹。
+
+4. 多个 state setName setAge 同时调用时，会 render 两次？怎么解决这个问题？
+   强制批处理，使用 unstatable_batchedUpdates
+
+```javascript
+unstable_batchedUpdates(() => {
+  setName("ddd");
+  setCount(34);
+}, []);
+```
+
+5. 怎么完全分离 didMount 和 didUpdate？因为当 useEffect 有依赖时相当于 didMount 和 didUpdate 的结合。
+   借助 ref
+
+```javascript
+function App(props) {
+  const isUpdate = useRef(false);
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!isUpdate.current) {
+      isUpdate.current = true;
+      //didMount
+    } else {
+      // didUpdate
     }
+  }, [count]);
 
-    const Child = ({name, addCount}) => {
-        return <div onClick={addCount}>{name}</div>
-    }
-
+  return <div></div>;
+}
 ```
-上面的例子即使用了addCount加了useCallback，当App更新时，Child还是会重新渲染。为啥？因为Child没有componentShouldUpdate方法。React提供了memo函数提供浅比较渲染。
-
-解决办法就是用memo包裹子组件，同时函数用useCallback包裹。
-   
-4. 多个state setName setAge同时调用时，会render两次？怎么解决这个问题？
-强制批处理，使用 unstatable_batchedUpdates
-```javascript
-unstable_batchedUpdates(()=> {
-    setName("ddd")
-    setCount(34);
-}, [])
-```
-   
-5. 怎么完全分离didMount和didUpdate？因为当useEffect有依赖时相当于didMount和didUpdate的结合。
-借助ref
-```javascript
- function App(props) {
-     const isUpdate = useRef(false)
-     const [count, setCount] = useState(0)
-    useEffect(()=> {
-        if(!isUpdate.current) {
-            isUpdate.current = true;
-            //didMount
-        } else {
-            // didUpdate
-        }
-    }, [count]);
-
-     return <div></div>
- }
-
-```
-
-
-

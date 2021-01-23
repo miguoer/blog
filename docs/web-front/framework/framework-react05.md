@@ -1,4 +1,4 @@
-# React 源码分析（五） Dom Diff
+# React 源码分析（五）- Dom Diff
 
 ## 前言
 

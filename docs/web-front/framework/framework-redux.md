@@ -1,4 +1,4 @@
-# Redux 源码（一）
+# Redux 源码（一）- Redux 核心
 
 ## Flux 架构介绍
 
