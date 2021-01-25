@@ -171,13 +171,9 @@ const design_pattern = [
   {
     title: "设计模式",
     collapsable: false,
-    children: ["design-pattern/patterns"],
+    children: ["patterns"],
   },
 ];
-
-const android = {
-  title: "安卓",
-};
 
 module.exports = {
   "/web-front/": web_front,
