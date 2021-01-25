@@ -478,7 +478,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
     if (nextDeps !== null) {
       const prevDeps = prevEffect.deps;
       // useEffect的依赖的对比
-      // 对比依赖的值有没有变化，有变化的话，重新发起一个Effect
+      // 对比依赖的值有没有变化，没有变化的话，push一个no_effect 的hookFlags进去。
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         pushEffect(hookFlags, create, destroy, nextDeps);
         return;
@@ -489,6 +489,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
   //设置flags
   currentlyRenderingFiber.flags |= fiberFlags;
 
+  // 如果有变化，或者没有设置依赖，重新发起一次update
   hook.memoizedState = pushEffect(
     HookHasEffect | hookFlags,
     create,

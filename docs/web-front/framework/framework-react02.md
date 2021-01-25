@@ -1424,6 +1424,8 @@ function performUnitOfWork(unitOfWork: Fiber): void {
 }
 ```
 
+### beginWork
+
 - beginWork
   1. 第一次执行创建 Fiber 节点
   2. 非初次执行则进行 diff，打上 Effect 更新标记
@@ -1848,6 +1850,8 @@ function beginWork(
 }
 ```
 
+### updateClassComponent
+
 主要看一个 updateClassComponent
 
 ```javascript
@@ -1953,6 +1957,8 @@ function updateClassComponent(
 }
 ```
 
+### finishClassComponent
+
 接下来逻辑在 finishClassComponent 方法
 
 ```javascript
@@ -2051,7 +2057,9 @@ function finishClassComponent(
 }
 ```
 
-接下来走到 reconcilChildren 中。
+### reconcilChildren
+
+如果需要 DOM Diff ，会走 reconcilChildren 中。
 
 ```javascript
 // 1. 初次，则创建Fiber子节点
@@ -2093,6 +2101,10 @@ export function reconcileChildren(
 ```
 
 第一次创建的时候走的 mountChildFibers，主要执行 reconcileSingleElement。
+
+### reconcileSingleElement
+
+reconcileSingleElement 的逻辑很简单，先判断 key 值是不是一样的，如果 key 值一样，那么就可以复用。如果 key 值不一样，再去判断类型是不是一样的，如果是相同类型的，就复用节点。如果不同，就删除。然后平行处理 child 的兄弟节点。
 
 ```javascript
 function reconcileSingleElement(
@@ -2337,7 +2349,13 @@ function reconcileChildFibers(
 }
 ```
 
-主要看一个子节点是数组的情况
+### reconcileChildrenArray
+
+主要看一个子节点是数组的情况。
+
+- 新老数组相同 index 进行对比， 通过 updateSlot 方法找到可以复用的节点，直到找不到可以复用的节点就退出循环。
+- 第一遍遍历完之后，删除剩余的老节点，追加剩余新节点。如果新节点已经遍历完成，就将剩余的老节点批量删除。如果是老节点遍历完成，仍有新节点剩余，则将新节点直接插入。
+- 如果此时老节点仍然还有剩余，说明还存在移动的情况。把所有数组元素按 key 或 index 放到 map 里，然后遍历新数组，插入老数组的元素，这是移动的情况。
 
 ```javascript
 function reconcileChildrenArray(

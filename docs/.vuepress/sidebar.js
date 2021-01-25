@@ -88,6 +88,7 @@ web_front = [
       "framework/framework-jsstack",
       "framework/framework-jsobject",
       "framework/framework-invensify",
+      "framework/framework-jsbridge",
       "framework/framework-vue3",
       "framework/framework-vuex",
     ],
@@ -147,15 +148,32 @@ web_front = [
 
 const algorithm = [
   {
+    title: "基本算法",
+    collapsable: false,
+    children: [
+      "leetcode/struct",
+      "leetcode/sort",
+      "leetcode/traverse",
+      "leetcode/tree",
+      "leetcode/LRU",
+      "leetcode/large_file",
+      "leetcode/other",
+    ],
+  },
+  {
     title: "leetcode",
     collapsable: false,
-    children: ["leetcode/leetcode", "leetcode/tree"],
+    children: ["leetcode/leetcode"],
   },
 ];
 
-const design_pattern = {
-  title: "设计模式",
-};
+const design_pattern = [
+  {
+    title: "设计模式",
+    collapsable: false,
+    children: ["design-pattern/patterns"],
+  },
+];
 
 const android = {
   title: "安卓",
@@ -164,4 +182,5 @@ const android = {
 module.exports = {
   "/web-front/": web_front,
   "/algorithm/": algorithm,
+  "/design-pattern/": design_pattern,
 };

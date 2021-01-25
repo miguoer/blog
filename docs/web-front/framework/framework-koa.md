@@ -49,12 +49,12 @@ module.exports = class Application extends Emitter {
 
     if (!this.listenerCount("error")) this.on("error", this.onerror);
 
-    const handleRequest = (req, res) => {
+    const back = (req, res) => {
       const ctx = this.createContext(req, res);
       return this.handleRequest(ctx, fn);
     };
 
-    return handleRequest;
+    return back;
   }
 
   // 创建上下文
@@ -155,19 +155,6 @@ function respond(ctx) {
 module.exports = compose;
 
 function compose(middleware) {
-  if (!Array.isArray(middleware))
-    throw new TypeError("Middleware stack must be an array!");
-  for (const fn of middleware) {
-    if (typeof fn !== "function")
-      throw new TypeError("Middleware must be composed of functions!");
-  }
-
-  /**
-   * @param {Object} context
-   * @return {Promise}
-   * @api public
-   */
-
   return function(context, next) {
     // last called middleware #
     let index = -1;
