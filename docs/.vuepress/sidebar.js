@@ -89,6 +89,7 @@ web_front = [
       "framework/framework-jsobject",
       "framework/framework-invensify",
       "framework/framework-jsbridge",
+      "framework/framework-vue2",
       "framework/framework-vue3",
       "framework/framework-vuex",
     ],
@@ -175,8 +176,17 @@ const design_pattern = [
   },
 ];
 
+const problems = [
+  {
+    title: "前端面试题",
+    collapsable: true,
+    children: ["frontend/html"],
+  },
+];
+
 module.exports = {
   "/web-front/": web_front,
   "/algorithm/": algorithm,
   "/design-pattern/": design_pattern,
+  "/problems/": problems,
 };

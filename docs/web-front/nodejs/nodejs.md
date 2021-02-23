@@ -169,9 +169,12 @@ TCP 的断开需要发送四个包，称为四次挥手。
 1. 浏览器端第一次发送请求到服务器端，服务器端创建一个 Session，同时会创建一个特殊的 Cookie（name 为 JSESSIONID 的固定值，value 为 session 对象的 ID），然后将该 Cookie 发送至浏览器端
 2. 浏览器端发送第 N（N>1）次请求到服务器端,浏览器端访问服务器端时就会携带该 name 为 JSESSIONID 的 Cookie 对象
 3. 服务器端根据 name 为 JSESSIONID 的 Cookie 的 value(sessionId),去查询 Session 对象，从而区分不同用户。
-   name 为 JSESSIONID 的 Cookie 不存在（关闭或更换浏览器），返回 1 中重新去创建 Session 与特殊的 Cookie
+   name 为 JSESSIONID 的 Cookie 不存在（关闭或更换浏览器），返回 1 中重新去创建 Session 与特殊的 Cookie。
+
    name 为 JSESSIONID 的 Cookie 存在，根据 value 中的 SessionId 去寻找 session 对象
+
    value 为 SessionId 不存在**（Session 对象默认存活 30 分钟）**，返回 1 中重新去创建 Session 与特殊的 Cookie
+
    value 为 SessionId 存在，返回 session 对象
 
 ![](./images/session.png)

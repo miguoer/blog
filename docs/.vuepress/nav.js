@@ -18,4 +18,9 @@ const android = {
   link: "/android/",
 };
 
-module.exports = [web_front, algorithm, design_pattern, android];
+const problems = {
+  text: "面试题",
+  link: "/problems/",
+};
+
+module.exports = [web_front, algorithm, design_pattern, android, problems];
