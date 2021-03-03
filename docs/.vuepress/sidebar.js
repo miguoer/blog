@@ -184,9 +184,18 @@ const problems = [
   },
 ];
 
+const ideas = [
+  {
+    title: "前端开发工具",
+    collapsable: false,
+    children: ["tools/drag-generate-web"],
+  },
+];
+
 module.exports = {
   "/web-front/": web_front,
   "/algorithm/": algorithm,
   "/design-pattern/": design_pattern,
   "/problems/": problems,
+  "/ideas/": ideas,
 };

@@ -45,6 +45,62 @@
 这些任务的优先级如下：
 同步任务执行 > idle 观察者 > Promise.then > io 观察者 > check 观察者
 
+### 宏任务与微任务的执行顺序
+
+在 Node11 之前 Node 的宏任务微任务执行顺序不一样，在 Node11 之后就是一样的。
+
+顺序为： 初始宏任务(js 的执行) -> 执行所有的微任务 -> 执行下一个宏任务 -> 所有的微任务。
+
+```javascript
+console.log("js脚本");
+setTimeout(function() {
+  console.log("timeout1:宏任务");
+  new Promise(function(resolve, reject) {
+    resolve();
+  }).then(() => {
+    console.log("promise1:微任务");
+  });
+  new Promise(function(resolve, reject) {
+    resolve();
+  }).then(() => {
+    console.log("promise2:微任务");
+  });
+});
+
+new Promise(function(resolve, reject) {
+  resolve();
+}).then(() => {
+  console.log("promise3:微任务");
+});
+
+process.nextTick(function() {
+  console.log("nextTick1:微任务");
+});
+
+setTimeout(function() {
+  console.log("timeout2:宏任务");
+});
+
+new Promise(function(resolve, reject) {
+  resolve();
+}).then(() => {
+  console.log("promise4:微任务");
+});
+```
+
+输出结果：
+
+```javascript
+js脚本;
+nextTick1: 微任务;
+promise3: 微任务;
+promise4: 微任务;
+timeout1: 宏任务;
+promise1: 微任务;
+promise2: 微任务;
+timeout2: 宏任务;
+```
+
 ### 几个特殊的 API
 
 这几个 API 线程池不参与。

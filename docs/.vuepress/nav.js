@@ -23,4 +23,16 @@ const problems = {
   link: "/problems/",
 };
 
-module.exports = [web_front, algorithm, design_pattern, android, problems];
+const ideas = {
+  text: "想法",
+  link: "/ideas/",
+};
+
+module.exports = [
+  web_front,
+  algorithm,
+  design_pattern,
+  android,
+  problems,
+  ideas,
+];

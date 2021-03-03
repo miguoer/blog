@@ -499,7 +499,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
 }
 ```
 
-那 destroy 什么时候执行? 答案是在 commitUnmount 阶段卸载组件的时候，会低啊用 destroy 方法。具体路径是 flushPassiveUnmountEffects->flushPassiveUnmountEffectsInsideOfDeletedTree->commitPassiveUnmount->commitHookEffectListUnmount->safelyCallDestroy
+那 destroy 什么时候执行? 答案是在 commitUnmount 阶段卸载组件的时候，会调用 destroy 方法。具体路径是 flushPassiveUnmountEffects->flushPassiveUnmountEffectsInsideOfDeletedTree->commitPassiveUnmount->commitHookEffectListUnmount->safelyCallDestroy
 
 ```javascript
 export function safelyCallDestroy(

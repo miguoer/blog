@@ -71,5 +71,3 @@ const connect = (mapStateToProps, mapDispatchToProps) => (WrappedComponent) => {
 };
 export default connect;
 ```
-
-## Vuex
