@@ -1084,7 +1084,7 @@ function workLoop(hasTimeRemaining, initialTime) {
 }
 ```
 
-如果 taskQueue 中还有任务，会继续调用前面的 MessageChannel 发送消息，知道所有 taskQueue 中的任务执行完。执行完后，会走 requestHostTimeout。requestHostTimeout 就是使用了 setTimeout 执行 handleTimeout 函数。
+如果 taskQueue 中还有任务，会继续调用前面的 MessageChannel 发送消息，直到所有 taskQueue 中的任务执行完。执行完后，会走 requestHostTimeout。requestHostTimeout 就是使用了 setTimeout 执行 handleTimeout 函数。
 
 ```javascript
 function handleTimeout(currentTime) {
@@ -2545,12 +2545,13 @@ function reconcileChildrenArray(
 }
 ```
 
-- compoleteUnitOfWork
-  1. 创建 DOM 对象
-  2. 递归处理子树的 DOM 对象
-  3. 把创建的 DOM 对象赋值给 workInProgress.stateNode 属性
-  4. 设置 DOM 对象的属性, 绑定事件等
-     16.3.0 会处理 effectTag，17.0 没有了。
+### completeUnitOfWork
+
+1. 创建 DOM 对象
+2. 递归处理子树的 DOM 对象
+3. 把创建的 DOM 对象赋值给 workInProgress.stateNode 属性
+4. 设置 DOM 对象的属性, 绑定事件等
+   16.3.0 会处理 effectTag，17.0 没有了。
 
 ```javascript
 // 1. 创建DOM对象

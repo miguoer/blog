@@ -228,24 +228,24 @@ function factorial(n, total) {
   蹦床函数+偏应用函数，将递归执行的过程暴露出来。手动让用户循环执行。
 
 ```javascript
-  //1. 转成偏函数
-  function runStack(n) {
-    if(n === 0) {
-      return 100;
-    }
-    reutrn runStack.bind(null, n - 2);
+var _ = require("lodash");
+//1. 转成偏函数
+function runStack(n) {
+  if (n === 0) {
+    return 100;
   }
-  //2. 蹦床函数，避免递归
+  return runStack.bind(null, n - 2);
+}
+//2. 蹦床函数，避免递归
 
-  function trampoline(f) {
-    var result = f.apply(fun, _.rest(arguments));
-    while(_.isFunction(result)) {
-      result = result();
-    }
-    return result;
+function trampoline(f) {
+  var result = f.apply(f, _.rest(f));
+  while (_.isFunction(result)) {
+    result = result();
   }
+  return result;
+}
 
-  //3. 蹦床函数包裹偏函数
-  trampoline(runStack(100000000));
-
+//3. 蹦床函数包裹偏函数
+console.log(trampoline(runStack(100000000)));
 ```

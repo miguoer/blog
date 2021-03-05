@@ -878,7 +878,7 @@ Node {
 ### Webpack 整体运行流程总结
 
 1. Compiler 是 webpack 的运行入口，compiler 对象代表了完整的 webpack 环境配置。这个对象在启动 Webpack 时被第一次建立，并配置好所有可操作的设置，包括 options,loader 和 plugin。当在 webpack 环境中应用一个插件时，插件将接收到此 compiler 对象的引用，可以使用它来访问 webpack 的主环境
-2. Compilation 对象代表了一次资源版本构建，当运行 webpack 开发环境中间件时，每当检测到一个文件编号，就会创建一个新的 compilation,从而生成一组新的编译资源，一个 compilation 对象表现了当前的模块资源、编译生成的资源、变化的文件以及被跟踪依赖的状态信息。compilation 对象也提供了很多关键步骤的回调，以供插件做自定义处理时选择使用
+2. Compilation 对象代表了一次资源版本构建，当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation,从而生成一组新的编译资源，一个 compilation 对象表现了当前的模块资源、编译生成的资源、变化的文件以及被跟踪依赖的状态信息。compilation 对象也提供了很多关键步骤的回调，以供插件做自定义处理时选择使用
 3. Chunk， 用于表示 chunk 的类，对于构建时需要的 chunk 对象由 Compilation 创建后保存管理
 4. Module。用于表示代码模块的基础类，衍生出很多子类用于处理不同的情况，关于代码模块的所有信息都会存在 module 实例中，例如 dependencies 记录代码模块的依赖等
 

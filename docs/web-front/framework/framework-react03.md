@@ -479,6 +479,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
       const prevDeps = prevEffect.deps;
       // useEffect的依赖的对比
       // 对比依赖的值有没有变化，没有变化的话，push一个no_effect 的hookFlags进去。
+      // areHookInputsEqual遍历依赖数组的每一项，看是否一样
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         pushEffect(hookFlags, create, destroy, nextDeps);
         return;

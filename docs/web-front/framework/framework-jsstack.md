@@ -7,11 +7,10 @@ js 在执⾏可执⾏的脚本时，⾸先会创建⼀个全局可执⾏上下�
 时都会创建⼀个可执⾏上下⽂（execution context）EC。当然可执⾏程序可能会存在很多函数调⽤，那
 么就会创建很多 EC，所以 JavaScript 引擎创建了执⾏上下⽂栈（Execution context stack，ECS）来管
 理执⾏上下⽂。当函数调⽤完成，js 会退出这个执⾏环境并把这个执⾏环境销毁，回到上⼀个⽅法的执⾏
-环境... 这个过程反复进⾏，直到执⾏栈中的代码全部执⾏完毕，如下是以上的⼏个关键词，我们来⼀次
-分析⼀下：
+环境... 这个过程反复进⾏，直到执⾏栈中的代码全部执⾏完毕，如下是以上的⼏个关键词：
 
 - 执⾏栈（Execution Context Stack）
-- 全局对象（GO Global Context）
+- 全局对象（GO Global Object)
 - 活动对象（Activation Object）
 - 变量对象（Variable Object）
 - 全局上下⽂(GC global execution context )

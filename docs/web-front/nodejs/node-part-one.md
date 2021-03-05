@@ -38,7 +38,7 @@
 触发微任务的操作有：
 
 - Promise
-- Objct.oberve
+- Objct.observe
 - MutationObserver
 - process.nextTick
 
@@ -152,7 +152,7 @@ emitter.on(function*(){});
 
 ### V8 垃圾回收机制 1
 
-- Node 使用 Javascript， 在服务端最大操作内存对象受到了一定得限制（堆区），64 位系统下约为 1.4GB, 栈区 32 位操作系统下是 0.7G, 新生代 64 位是 32M，32 位是 16M
+- Node 使用 Javascript， 在服务端最大操作内存对象受到了一定的限制（堆区），64 位系统下约为 1.4GB, 栈区 32 位操作系统下是 0.7G, 新生代 64 位是 32M，32 位是 16M
 
 ```javascript
 node --max-new-space-size app.js
